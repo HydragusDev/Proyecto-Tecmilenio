@@ -17,7 +17,7 @@ def validar_aceptacion():
 
 root = tk.Tk()
 root.title("Términos y Condiciones")
-root.geometry("400x250")
+root.geometry("800x450")
 
 label_titulo = tk.Label(
     root, text="Términos y Condiciones", font=("Arial", 14, "bold")
@@ -32,7 +32,13 @@ label_empleado = tk.Label(
 label_empleado.pack(pady=5)
 label_textoemp = tk.Label(
     root,
-    text="k",
+    text="1. EL empleado debe iniciar sesion con un usuario validos para acceder al sistema."
+    "\n2. El empleado es responsable de administrar el inventario de la biblioteca."
+    "\n3. El empleado puede registrar, consultar, modificar y eliminar libros del inventario."
+    "\n4. El empleado puede agregar o actualizar la cantidad de ejemplares disponibles."
+    "\n5. El empleo puede registrar los prestamos y devouciones realizados por los usuarios."
+    "\n6. El empleado puede consultar el estado del inventario y venificar que libros estan disponibles o prestados."
+    "\n7. El empleado no puede registrar informacion incompleta de un libro.",
     font=("Arial", 12),
 )
 label_textoemp.pack(pady=5)
