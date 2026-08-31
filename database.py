@@ -1,3 +1,9 @@
+"""
+Archivo Database.
+
+Archivo encargado de la conección con 'bitacora.db' y la creación de tablas donde se guarda la información del usuario ademas del inventario.
+"""
+
 import sqlite3
 from pathlib import Path
 
@@ -48,18 +54,21 @@ CREATE INDEX IF NOT EXISTS idx_prestamos_estado  ON prestamos(estado);
 
 
 def conectar() -> sqlite3.Connection:
-    """Abre una conexion a bitacora.db (SQLite la crea sola si no existe)."""
+
     conexion = sqlite3.connect(RUTA_BD)
+
     conexion.execute("PRAGMA foreign_keys = ON;")
+
     return conexion
 
 
 def crear_tablas() -> None:
-
     conexion = conectar()
     try:
         conexion.executescript(ESQUEMA)
+
         conexion.commit()
+
     finally:
         conexion.close()
 
@@ -70,6 +79,7 @@ def existe_correo(correo: str) -> bool:
         cursor = conexion.execute(
             "SELECT 1 FROM usuarios WHERE correo = ?", (correo,)
         )
+
         return cursor.fetchone() is not None
     finally:
         conexion.close()
@@ -78,10 +88,13 @@ def existe_correo(correo: str) -> bool:
 def registrar_usuario(
     correo: str, contrasena_hash: bytes, salt: bytes, rol: str
 ) -> None:
-
     conexion = conectar()
     try:
         conexion.execute(
+            """
+            INSERT INTO usuarios (correo, contrasena_hash, salt, rol, acepto_terminos)
+            VALUES (?, ?, ?, ?, 1)
+            """,
             (correo, contrasena_hash, salt, rol),
         )
         conexion.commit()
@@ -91,7 +104,9 @@ def registrar_usuario(
 
 def obtener_usuario_por_correo(correo: str) -> sqlite3.Row | None:
     conexion = conectar()
+
     conexion.row_factory = sqlite3.Row
+
     try:
         cursor = conexion.execute(
             "SELECT * FROM usuarios WHERE correo = ?", (correo,)
