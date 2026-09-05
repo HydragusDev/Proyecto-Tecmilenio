@@ -8,6 +8,7 @@ salir).
 
 import time
 
+from email_validator import EmailNotValidError, validate_email
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
@@ -68,17 +69,12 @@ def iniciar_sesion() -> None:
 def registrarse() -> None:
     while True:
         correo = Prompt.ask("Correo electronico")
-        if (
-            "@" in correo
-            and correo.count("@") == 1
-            and " " not in correo
-            and "." in correo.split("@")[-1]
-        ):
+        try:
+            validate_email(correo)
             break
-        else:
-            console.print("[red]Ingresa un correo valido")
-            continue
-
+        except EmailNotValidError as e:
+            print(str(e))
+            console.print("Ingrese un correo electronico valido")
     if db.existe_correo(correo):
         console.print("[red]Ya existe una cuenta con ese correo.[/red]")
         return
@@ -105,7 +101,7 @@ def main() -> None:
         elif opcion == "2":
             registrarse()
         elif opcion == "3":
-            console.print("[bold red]Cerrando el sistema...[/bold red]")
+            console.print("Cerrando el sistema...[/bold red]")
             break
 
 
