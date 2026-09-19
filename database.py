@@ -25,31 +25,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS libros (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
     titulo  TEXT NOT NULL,
-    autor   TEXT NOT NULL
+    autor   TEXT NOT NULL,
+    ejemplares INTEGER NOT NULL
 );
  
-CREATE TABLE IF NOT EXISTS ejemplares (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    libro_id  INTEGER NOT NULL REFERENCES libros(id),
-    estado    TEXT NOT NULL DEFAULT 'disponible'
-              CHECK (estado IN ('disponible', 'prestado', 'mantenimiento'))
-);
- 
-CREATE TABLE IF NOT EXISTS prestamos (
-    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    usuario_id          INTEGER NOT NULL REFERENCES usuarios(id),
-    ejemplar_id         INTEGER NOT NULL REFERENCES ejemplares(id),
-    estado              TEXT NOT NULL DEFAULT 'pendiente'
-                        CHECK (estado IN ('pendiente', 'autorizado', 'rechazado', 'devuelto')),
-    fecha_solicitud     TEXT NOT NULL DEFAULT (datetime('now')),
-    fecha_autorizacion  TEXT,
-    fecha_devolucion    TEXT
-);
- 
-CREATE INDEX IF NOT EXISTS idx_ejemplares_libro  ON ejemplares(libro_id);
-CREATE INDEX IF NOT EXISTS idx_ejemplares_estado ON ejemplares(estado);
-CREATE INDEX IF NOT EXISTS idx_prestamos_usuario ON prestamos(usuario_id);
-CREATE INDEX IF NOT EXISTS idx_prestamos_estado  ON prestamos(estado);
 """
 
 

@@ -101,7 +101,7 @@ def main() -> None:
         elif opcion == "2":
             registrarse()
         elif opcion == "3":
-            console.print("Cerrando el sistema...[/bold red]")
+            console.print("[bold red]Cerrando el sistema...[/bold red]")
             break
 
 
