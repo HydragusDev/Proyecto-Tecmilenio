@@ -105,6 +105,7 @@ def ver_prestamos(conexion):
 
     if not filas:
         console.print("No hay prestamos registrados.", style=error_style)
+        return False
     else:
         tabla = Table(title="[bold white]Menu Prestamos[/bold white]")
         tabla.add_column("ID", justify="center", style="green")
@@ -135,6 +136,183 @@ def ver_prestamos(conexion):
                 str(fila["motivo_rechazo"]),
             )
         console.print(tabla)
+        return True
+
+
+def opciones_solicitud_prestamo():
+    console.print(
+        Panel(
+            "[bold white]1. Autorizar\n2. Rechazar\n3. Cancelar [/bold white]",
+            title="SOLICITUD DE PRESTAMO",
+            border_style="green",
+            expand=False,
+        )
+    )
+
+
+def gestionar_solicitudes(conexion):
+    solicitudes_atendidas = 0
+    while True:
+        hay_prestamos = ver_prestamos(conexion)
+        if not hay_prestamos:
+            return
+
+        try:
+            id_prestamo = int(
+                input("Ingresa el ID de la solicitud que deseas atender: ")
+            )
+        except ValueError:
+            console.print(
+                "Por favor, ingresa un número entero válido.",
+                style=error_style,
+            )
+            continue
+
+        cursor = conexion.execute(
+            "SELECT id, id_libro, id_usuario, estado FROM prestamos WHERE id = ?",
+            (id_prestamo,),
+        )
+        fila = cursor.fetchone()
+
+        if fila is None:
+            console.print(
+                "No se ha encontrado una solicitud con ese ID, por favor intenta nuevamente.",
+                style=error_style,
+            )
+            continue
+
+        if fila["estado"] != "pendiente":
+            console.print(
+                f'La solicitud {int(fila["id"]):04d} ya está en estado "{fila["estado"]}". Solo se pueden atender solicitudes pendientes.',
+                style=error_style,
+            )
+            continue
+
+        console.print(
+            f'La solicitud seleccionada es la {int(fila["id"]):04d} del usuario {fila["id_usuario"]} para el libro {fila["id_libro"]}.'
+        )
+        while True:
+            opciones_solicitud_prestamo()
+            try:
+                opcion_solicitud = int(input("¿Qué deseas hacer? "))
+            except ValueError:
+                console.print(
+                    "Por favor, ingresa un número entero válido.",
+                    style=error_style,
+                )
+                continue
+
+            if opcion_solicitud == 1:
+                atendida = autorizar_prestamo(conexion, fila)
+                if atendida:
+                    solicitudes_atendidas += 1
+                break
+            elif opcion_solicitud == 2:
+                atendida = rechazar_prestamo(conexion, fila)
+                if atendida:
+                    solicitudes_atendidas += 1
+                break
+            elif opcion_solicitud == 3:
+                console.print("Atención de solicitudes cancelada")
+                return
+            else:
+                console.print("Ingresa una opción valida", style=error_style)
+
+        otra_solicitud = (
+            input("¿Deseas atender otra solicitud? (s/n): ").strip().lower()
+        )
+        if otra_solicitud not in ("si", "sí", "s", "y", "yes"):
+            if solicitudes_atendidas > 0:
+                console.print(
+                    f"Has atendido {solicitudes_atendidas} solicitud(es) correctamente.",
+                    style=check_style,
+                )
+            break
+
+
+def autorizar_prestamo(conexion, fila):
+    cursor = conexion.execute(
+        "SELECT ejemplares FROM libros WHERE id = ?",
+        (fila["id_libro"],),
+    )
+    fila_libro = cursor.fetchone()
+
+    if fila_libro is None:
+        console.print(
+            "No se encontró el libro asociado a esta solicitud.",
+            style=error_style,
+        )
+        return False
+
+    cursor_conteo = conexion.execute(
+        "SELECT COUNT(*) FROM prestamos WHERE id_libro = ? AND estado = 'autorizado'",
+        (fila["id_libro"],),
+    )
+    prestados = cursor_conteo.fetchone()[0]
+    disponibles = fila_libro["ejemplares"] - prestados
+
+    if disponibles <= 0:
+        console.print(
+            "No hay ejemplares disponibles de este libro.",
+            style=error_style,
+        )
+        return False
+
+    while True:
+        confirmar_autorizacion = (
+            input("¿Confirmas que deseas autorizar esta solicitud? ")
+            .strip()
+            .lower()
+        )
+        if confirmar_autorizacion in ("si", "sí", "s", "y", "yes"):
+            conexion.execute(
+                "UPDATE prestamos SET estado = 'autorizado', fecha_autorizacion = datetime('now') WHERE id = ?",
+                (fila["id"],),
+            )
+            conexion.commit()
+            console.print(
+                "Solicitud autorizada correctamente.",
+                style=check_style,
+            )
+            return True
+        elif confirmar_autorizacion in ("no", "n"):
+            console.print("Autorización cancelada.")
+            return False
+        else:
+            console.print("Ingresa una opción valida", style=error_style)
+
+
+def rechazar_prestamo(conexion, fila):
+    motivo_rechazo = input("Ingresa el motivo del rechazo: ").strip()
+    if not motivo_rechazo:
+        console.print(
+            "Debes ingresar un motivo de rechazo.",
+            style=error_style,
+        )
+        return False
+
+    while True:
+        confirmar_rechazo = (
+            input("¿Confirmas que deseas rechazar esta solicitud? ")
+            .strip()
+            .lower()
+        )
+        if confirmar_rechazo in ("si", "sí", "s", "y", "yes"):
+            conexion.execute(
+                "UPDATE prestamos SET estado = 'rechazado', motivo_rechazo = ? WHERE id = ?",
+                (motivo_rechazo, fila["id"]),
+            )
+            conexion.commit()
+            console.print(
+                "Solicitud rechazada correctamente.",
+                style=check_style,
+            )
+            return True
+        elif confirmar_rechazo in ("no", "n"):
+            console.print("Rechazo cancelado.")
+            return False
+        else:
+            console.print("Ingresa una opción valida", style=error_style)
 
 
 def modificar_libro(conexion):
@@ -390,10 +568,17 @@ while True:
                 conexion.close()
 
         elif opcion_menu == "5":
+            conexion = db.conectar()
+            conexion.row_factory = sqlite3.Row
             console.print(
                 "Opción 5 Seleccionada:\n[bold white]Ver Solicitudes de Prestamo[/bold white]"
             )
-            ver_prestamos(conexion)
+            try:
+                gestionar_solicitudes(conexion)
+            except Exception as e:
+                console.print(f"[red]Ha ocurrido el error: {e}[/red]")
+            finally:
+                conexion.close()
         elif opcion_menu == "6":
             console.print(
                 "Opción 6 Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"

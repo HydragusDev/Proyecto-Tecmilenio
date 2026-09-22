@@ -153,7 +153,34 @@ def busqueda_especifica(conexion, criterio_busqueda, busqueda):
         console.print("Repite la búsqueda", style=error_style)
 
 
+def asegurar_usuario_demo(conexion, id_usuario):
+    cursor = conexion.execute(
+        "SELECT id FROM usuarios WHERE id = ?",
+        (id_usuario,),
+    )
+    if cursor.fetchone() is not None:
+        return True
+
+    conexion.execute(
+        "INSERT INTO usuarios (id, correo, contrasena_hash, salt, rol, acepto_terminos) VALUES (?, ?, ?, ?, ?, 1)",
+        (id_usuario, "usuario.demo@biblioteca.local", b"demo", b"demo", "usuario"),
+    )
+    conexion.commit()
+    cursor = conexion.execute(
+        "SELECT id FROM usuarios WHERE id = ?",
+        (id_usuario,),
+    )
+    return cursor.fetchone() is not None
+
+
 def solicitar_prestamo(conexion, id_usuario):
+    if not asegurar_usuario_demo(conexion, id_usuario):
+        console.print(
+            "No se pudo usar el usuario de prueba para la solicitud.",
+            style=error_style,
+        )
+        return
+
     ver_inventario_disponibles(conexion)
 
     try:
@@ -194,6 +221,84 @@ def solicitar_prestamo(conexion, id_usuario):
 
     console.print(
         "Solicitud de préstamo enviada. Espera autorización.",
+        style=check_style,
+    )
+
+
+def agendar_devolucion(conexion, id_usuario):
+    cursor = conexion.execute(
+        "SELECT id, id_libro, estado, fecha_solicitud, fecha_autorizacion, fecha_devolucion FROM prestamos WHERE id_usuario = ? AND estado = 'autorizado' ORDER BY id",
+        (id_usuario,),
+    )
+    filas = cursor.fetchall()
+
+    if not filas:
+        console.print(
+            "No tienes préstamos autorizados para agendar una devolución.",
+            style=error_style,
+        )
+        return
+
+    tabla = Table(title="[bold white]Tus Prestamos Autorizados[/bold white]")
+    tabla.add_column("ID", justify="center", style="green")
+    tabla.add_column("ID Libro", justify="center", style="blue")
+    tabla.add_column("Estado", justify="center", style="green")
+    tabla.add_column("Fecha de Solicitud", justify="center", style="yellow")
+    tabla.add_column("Fecha de Autorización", justify="center", style="yellow")
+    tabla.add_column("Fecha de Devolución", justify="center", style="yellow")
+
+    for fila in filas:
+        id_prestamo = f"{int(fila['id']):04d}"
+        tabla.add_row(
+            id_prestamo,
+            str(fila["id_libro"]),
+            str(fila["estado"]),
+            str(fila["fecha_solicitud"]),
+            str(fila["fecha_autorizacion"]),
+            str(fila["fecha_devolucion"]),
+        )
+    console.print(tabla)
+
+    try:
+        id_prestamo = int(
+            input("Ingresa el ID del préstamo que deseas devolver: ")
+        )
+    except ValueError:
+        console.print("El ID ingresado no es válido.", style=error_style)
+        return
+
+    cursor = conexion.execute(
+        "SELECT id, estado FROM prestamos WHERE id = ? AND id_usuario = ?",
+        (id_prestamo, id_usuario),
+    )
+    fila_prestamo = cursor.fetchone()
+
+    if fila_prestamo is None:
+        console.print(
+            f"\n[red]No se encontró un préstamo con ID: {id_prestamo:04d}[/red]\n"
+        )
+        return
+
+    if fila_prestamo["estado"] != "autorizado":
+        console.print(
+            "Solo puedes agendar devolución de préstamos autorizados.",
+            style=error_style,
+        )
+        return
+
+    fecha_devolucion = input("Ingresa la fecha de devolución: ").strip()
+    if not fecha_devolucion:
+        console.print("Debes ingresar una fecha.", style=error_style)
+        return
+
+    conexion.execute(
+        "UPDATE prestamos SET fecha_devolucion = ? WHERE id = ?",
+        (fecha_devolucion, id_prestamo),
+    )
+    conexion.commit()
+
+    console.print(
+        "Fecha de devolución enviada al empleado.",
         style=check_style,
     )
 
@@ -301,6 +406,15 @@ while True:
             console.print(
                 "Opción Seleccionada:\n[bold white]Agendar Devolución[/bold white]"
             )
+            id_usuario_demo = 1
+            conexion = db.conectar()
+            conexion.row_factory = sqlite3.Row
+            try:
+                agendar_devolucion(conexion, id_usuario_demo)
+            except Exception as e:
+                console.print(f"Ha ocurrido el error: {e}", style=error_style)
+            finally:
+                conexion.close()
 
         elif opcion_menu == 4:
             console.print(
