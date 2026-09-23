@@ -3,21 +3,12 @@ Archivo principal.
 
 Punto de entrada del sistema de biblioteca. Aqui vive el flujo de
 arranque (pantalla de carga) y el menu inicial (login / registro /
-<<<<<<< HEAD
-salir).
-"""
-
-import time
-
-from email_validator import EmailNotValidError, validate_email
-=======
 salir)."""
 #Imports
 
 
 #Ther's not an email validator?????? What is this
 #from email_validator import EmailNotValidError, validate_email
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
@@ -25,11 +16,6 @@ from rich.prompt import Prompt
 
 import database as db
 
-<<<<<<< HEAD
-console = Console()
-
-
-=======
 #Allows to run other files
 import os
 import runpy
@@ -66,7 +52,6 @@ def reset_timer():
 
 
 #Loading Screen function
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
 def mostrar_pantalla_carga(duracion_segundos: int = 5) -> None:
 
     with Progress(
@@ -82,11 +67,7 @@ def mostrar_pantalla_carga(duracion_segundos: int = 5) -> None:
             time.sleep(duracion_segundos / pasos)
             progress.update(tarea, advance=100 / pasos)
 
-<<<<<<< HEAD
-
-=======
 #Main Menu
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
 def menu_inicial() -> str:
     console.print(
         Panel.fit(
@@ -97,11 +78,6 @@ def menu_inicial() -> str:
             border_style="cyan",
         )
     )
-<<<<<<< HEAD
-    return Prompt.ask("Elige una opcion", choices=["1", "2", "3"])
-
-
-=======
     option = Prompt.ask("Elige una opcion", choices=["1", "2", "3"])
     if option == "1":
 
@@ -118,7 +94,6 @@ def menu_inicial() -> str:
 
 """
 #Password (old)
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
 def iniciar_sesion() -> None:
 
     correo = Prompt.ask("Correo electronico")
@@ -160,26 +135,6 @@ def registrarse() -> None:
     rol = Prompt.ask("Rol", choices=["usuario", "empleado"])
 
 
-<<<<<<< HEAD
-def main() -> None:
-    db.crear_tablas()
-    mostrar_pantalla_carga()
-
-    while True:
-        opcion = menu_inicial()
-
-        if opcion == "1":
-            iniciar_sesion()
-        elif opcion == "2":
-            registrarse()
-        elif opcion == "3":
-            console.print("[bold red]Cerrando el sistema...[/bold red]")
-            break
-
-
-if __name__ == "__main__":
-    main()
-=======
 
 """
 
@@ -249,4 +204,3 @@ if __name__ == "__main__":
 
 
 
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
