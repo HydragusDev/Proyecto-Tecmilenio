@@ -1,8 +1,4 @@
 import sqlite3
-<<<<<<< HEAD
-from datetime import date, datetime
-=======
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
 
 from pyfiglet import figlet_format
 from rich.console import Console
@@ -173,11 +169,7 @@ def gestionar_solicitudes(conexion):
             continue
 
         cursor = conexion.execute(
-<<<<<<< HEAD
-            "SELECT id, id_libro, id_usuario, estado, fecha_devolucion, fecha_autorizacion FROM prestamos WHERE id = ?",
-=======
             "SELECT id, id_libro, id_usuario, estado FROM prestamos WHERE id = ?",
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
             (id_prestamo,),
         )
         fila = cursor.fetchone()
@@ -189,50 +181,15 @@ def gestionar_solicitudes(conexion):
             )
             continue
 
-<<<<<<< HEAD
-        if fila["estado"] == "rechazado":
-=======
         if fila["estado"] != "pendiente":
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
             console.print(
                 f'La solicitud {int(fila["id"]):04d} ya está en estado "{fila["estado"]}". Solo se pueden atender solicitudes pendientes.',
                 style=error_style,
             )
             continue
-<<<<<<< HEAD
-        elif fila["estado"] == "autorizado":
-            console.print(
-                f'La solicitud {int(fila["id"])} fue autorizada el día "{fila["fecha_autorizacion"]}" deseas pasarlo a devuelto?'
-            )
-            devuelto = input(
-                f"Al hacer aceptar esto, confirmas que el libro fue devuelto la fecha {fila['fecha_devolucion']}"
-            )
-            if devuelto in ("si", "sí", "s", "y", "yes"):
-                conexion.execute(
-                    "UPDATE prestamos SET estado = 'devuelto', "
-                    "motivo_rechazo = 'Devuelto correctamente el ' || strftime('%d/%m/%Y'), 'now') "
-                    "WHERE id = ?",
-                    (fila["id"],),
-                )
-                conexion.commit()
-                console.print(
-                    "Libro marcado como devuelto exitosamente",
-                    style=check_style,
-                )
-                break
-            elif devuelto in ("no", "n"):
-                break
-            else:
-                console.print("Ingresa una opción valida")
-                continue
 
         console.print(
             f"La solicitud seleccionada es la {int(fila['id']):04d} del usuario {fila['id_usuario']} para el libro {fila['id_libro']}."
-=======
-
-        console.print(
-            f'La solicitud seleccionada es la {int(fila["id"]):04d} del usuario {fila["id_usuario"]} para el libro {fila["id_libro"]}.'
->>>>>>> 34c42708b804dd71823fb673c846df56362d3f6c
         )
         while True:
             opciones_solicitud_prestamo()
