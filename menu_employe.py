@@ -22,7 +22,7 @@ def menu_empleado_ascci():
 def opciones_empleado():
     console.print(
         Panel(
-            "[bold white]1. Ingresar Libro\n2. Modificar Libro\n3. Borrar Libro\n4. Ver Inventario\n5. Ver Solicitudes de Prestamos\n6. Salir [/bold white]",
+            "[bold white]1. Ingresar Libro\n2. Modificar Libro\n3. Borrar Libro\n4. Ver Inventario\n5. Ver Solicitudes de Prestamos\n6. Salir[/bold white]",
             title="OPCIONES",
             border_style="cyan",
             expand=False,
@@ -63,12 +63,15 @@ def insertar_libro(conexion):
         autor_nuevo = (
             input("Ingresa el nombre del autor del libro: ").strip().title()
         )
+
         try:
             ejemplares_nuevo = int(
                 input("Ingresa los ejemplares que tenemos en existencia: ")
             )
         except ValueError:
-            console.print("[red]Debes ingresar un número válido.[/red]")
+            console.print(
+                "Debes ingresar un número válido.", style=error_style
+            )
             continue
 
         conexion.execute(
@@ -91,10 +94,7 @@ def insertar_libro(conexion):
                     )
                 return
             else:
-                console.print(
-                    "Ingresa una opción válida",
-                    style=error_style,
-                )
+                console.print("Ingresa una opción válida", style=error_style)
 
 
 def ver_prestamos(conexion):
@@ -104,46 +104,40 @@ def ver_prestamos(conexion):
     filas = cursor.fetchall()
 
     if not filas:
-        console.print("No hay prestamos registrados.", style=error_style)
+        console.print("No hay préstamos registrados.", style=error_style)
         return False
-    else:
-        tabla = Table(title="[bold white]Menu Prestamos[/bold white]")
-        tabla.add_column("ID", justify="center", style="green")
-        tabla.add_column("ID Libro", justify="center", style="blue")
-        tabla.add_column("ID Usuario", justify="center", style="blue")
-        tabla.add_column("Estado", justify="center", style="green")
-        tabla.add_column(
-            "Fecha de Solicitud", justify="center", style="yellow"
-        )
-        tabla.add_column(
-            "Fecha de Autorización", justify="center", style="yellow"
-        )
-        tabla.add_column(
-            "Fecha de Devolución", justify="center", style="yellow"
-        )
-        tabla.add_column("Notas", justify="center", style="magenta")
 
-        for fila in filas:
-            id = f"{int(fila['id']):04d}"
-            tabla.add_row(
-                id,
-                str(fila["id_libro"]),
-                str(fila["id_usuario"]),
-                str(fila["estado"]),
-                str(fila["fecha_solicitud"]),
-                str(fila["fecha_autorizacion"]),
-                str(fila["fecha_devolucion"]),
-                str(fila["motivo_rechazo"]),
-            )
-        console.print(tabla)
-        return True
+    tabla = Table(title="[bold white]Menú Préstamos[/bold white]")
+    tabla.add_column("ID", justify="center", style="green")
+    tabla.add_column("ID Libro", justify="center", style="blue")
+    tabla.add_column("ID Usuario", justify="center", style="blue")
+    tabla.add_column("Estado", justify="center", style="green")
+    tabla.add_column("Fecha de Solicitud", justify="center", style="yellow")
+    tabla.add_column("Fecha de Autorización", justify="center", style="yellow")
+    tabla.add_column("Fecha de Devolución", justify="center", style="yellow")
+    tabla.add_column("Notas", justify="center", style="magenta")
+
+    for fila in filas:
+        id_prestamo = f"{int(fila['id']):04d}"
+        tabla.add_row(
+            id_prestamo,
+            str(fila["id_libro"]),
+            str(fila["id_usuario"]),
+            str(fila["estado"]),
+            str(fila["fecha_solicitud"]),
+            str(fila["fecha_autorizacion"]),
+            str(fila["fecha_devolucion"]),
+            str(fila["motivo_rechazo"]),
+        )
+    console.print(tabla)
+    return True
 
 
 def opciones_solicitud_prestamo():
     console.print(
         Panel(
-            "[bold white]1. Autorizar\n2. Rechazar\n3. Cancelar [/bold white]",
-            title="SOLICITUD DE PRESTAMO",
+            "[bold white]1. Autorizar\n2. Rechazar\n3. Cancelar[/bold white]",
+            title="SOLICITUD DE PRÉSTAMO",
             border_style="green",
             expand=False,
         )
@@ -169,24 +163,54 @@ def gestionar_solicitudes(conexion):
             continue
 
         cursor = conexion.execute(
-            "SELECT id, id_libro, id_usuario, estado FROM prestamos WHERE id = ?",
+            "SELECT id, id_libro, id_usuario, estado, fecha_devolucion, fecha_autorizacion FROM prestamos WHERE id = ?",
             (id_prestamo,),
         )
         fila = cursor.fetchone()
 
         if fila is None:
             console.print(
-                "No se ha encontrado una solicitud con ese ID, por favor intenta nuevamente.",
+                "No se ha encontrado una solicitud con ese ID.",
                 style=error_style,
             )
             continue
 
-        if fila["estado"] != "pendiente":
+        if fila["estado"] == "rechazado":
             console.print(
-                f'La solicitud {int(fila["id"]):04d} ya está en estado "{fila["estado"]}". Solo se pueden atender solicitudes pendientes.',
+                f'La solicitud {int(fila["id"]):04d} ya está en estado "{fila["estado"]}".',
                 style=error_style,
             )
             continue
+        elif fila["estado"] == "autorizado":
+            console.print(
+                f'La solicitud {int(fila["id"])} fue autorizada el día "{fila["fecha_autorizacion"]}".'
+            )
+            devuelto = (
+                input(
+                    f"¿Confirmas que el libro fue devuelto en la fecha {fila['fecha_devolucion']}? (s/n): "
+                )
+                .strip()
+                .lower()
+            )
+
+            if devuelto in ("si", "sí", "s", "y", "yes"):
+                conexion.execute(
+                    "UPDATE prestamos SET estado = 'devuelto', "
+                    "motivo_rechazo = 'Devuelto correctamente el ' || strftime('%d/%m/%Y', 'now') "
+                    "WHERE id = ?",
+                    (fila["id"],),
+                )
+                conexion.commit()
+                console.print(
+                    "Libro marcado como devuelto exitosamente.",
+                    style=check_style,
+                )
+                break
+            elif devuelto in ("no", "n"):
+                break
+            else:
+                console.print("Ingresa una opción válida", style=error_style)
+                continue
 
         console.print(
             f"La solicitud seleccionada es la {int(fila['id']):04d} del usuario {fila['id_usuario']} para el libro {fila['id_libro']}."
@@ -203,20 +227,18 @@ def gestionar_solicitudes(conexion):
                 continue
 
             if opcion_solicitud == 1:
-                atendida = autorizar_prestamo(conexion, fila)
-                if atendida:
+                if autorizar_prestamo(conexion, fila):
                     solicitudes_atendidas += 1
                 break
             elif opcion_solicitud == 2:
-                atendida = rechazar_prestamo(conexion, fila)
-                if atendida:
+                if rechazar_prestamo(conexion, fila):
                     solicitudes_atendidas += 1
                 break
             elif opcion_solicitud == 3:
-                console.print("Atención de solicitudes cancelada")
+                console.print("Atención de solicitudes cancelada.")
                 return
             else:
-                console.print("Ingresa una opción valida", style=error_style)
+                console.print("Ingresa una opción válida", style=error_style)
 
         otra_solicitud = (
             input("¿Deseas atender otra solicitud? (s/n): ").strip().lower()
@@ -232,8 +254,7 @@ def gestionar_solicitudes(conexion):
 
 def autorizar_prestamo(conexion, fila):
     cursor = conexion.execute(
-        "SELECT ejemplares FROM libros WHERE id = ?",
-        (fila["id_libro"],),
+        "SELECT ejemplares FROM libros WHERE id = ?", (fila["id_libro"],)
     )
     fila_libro = cursor.fetchone()
 
@@ -253,66 +274,62 @@ def autorizar_prestamo(conexion, fila):
 
     if disponibles <= 0:
         console.print(
-            "No hay ejemplares disponibles de este libro.",
-            style=error_style,
+            "No hay ejemplares disponibles de este libro.", style=error_style
         )
         return False
 
     while True:
-        confirmar_autorizacion = (
+        confirmar = (
             input("¿Confirmas que deseas autorizar esta solicitud? ")
             .strip()
             .lower()
         )
-        if confirmar_autorizacion in ("si", "sí", "s", "y", "yes"):
+        if confirmar in ("si", "sí", "s", "y", "yes"):
             conexion.execute(
                 "UPDATE prestamos SET estado = 'autorizado', fecha_autorizacion = datetime('now') WHERE id = ?",
                 (fila["id"],),
             )
             conexion.commit()
             console.print(
-                "Solicitud autorizada correctamente.",
-                style=check_style,
+                "Solicitud autorizada correctamente.", style=check_style
             )
             return True
-        elif confirmar_autorizacion in ("no", "n"):
+        elif confirmar in ("no", "n"):
             console.print("Autorización cancelada.")
             return False
         else:
-            console.print("Ingresa una opción valida", style=error_style)
+            console.print("Ingresa una opción válida", style=error_style)
 
 
 def rechazar_prestamo(conexion, fila):
     motivo_rechazo = input("Ingresa el motivo del rechazo: ").strip()
     if not motivo_rechazo:
         console.print(
-            "Debes ingresar un motivo de rechazo.",
-            style=error_style,
+            "Debes ingresar un motivo de rechazo.", style=error_style
         )
         return False
 
     while True:
-        confirmar_rechazo = (
+        confirmar = (
             input("¿Confirmas que deseas rechazar esta solicitud? ")
             .strip()
             .lower()
         )
-        if confirmar_rechazo in ("si", "sí", "s", "y", "yes"):
+        if confirmar in ("si", "sí", "s", "y", "yes"):
             conexion.execute(
                 "UPDATE prestamos SET estado = 'rechazado', motivo_rechazo = ? WHERE id = ?",
                 (motivo_rechazo, fila["id"]),
             )
             conexion.commit()
             console.print(
-                "Solicitud rechazada correctamente.",
-                style=check_style,
+                "Solicitud rechazada correctamente.", style=check_style
             )
             return True
-        elif confirmar_rechazo in ("no", "n"):
+        elif confirmar in ("no", "n"):
             console.print("Rechazo cancelado.")
             return False
         else:
-            console.print("Ingresa una opción valida", style=error_style)
+            console.print("Ingresa una opción válida", style=error_style)
 
 
 def modificar_libro(conexion):
@@ -330,6 +347,7 @@ def modificar_libro(conexion):
                 style=error_style,
             )
             continue
+
         cursor = conexion.execute(
             "SELECT id, titulo, autor, ejemplares FROM libros WHERE id = ?",
             (id_modificar,),
@@ -338,8 +356,7 @@ def modificar_libro(conexion):
 
         if fila is None:
             console.print(
-                "No se ha encontrado un libro con ese ID, por favor intenta nuevamente.",
-                style=error_style,
+                "No se ha encontrado un libro con ese ID.", style=error_style
             )
             continue
 
@@ -348,7 +365,7 @@ def modificar_libro(conexion):
         )
         console.print(
             Panel(
-                "[bold white]1. Titulo\n2. Autor\n3. Ejemplares\n4. Cancelar Edición [/bold white]",
+                "[bold white]1. Título\n2. Autor\n3. Ejemplares\n4. Cancelar Edición[/bold white]",
                 title="DATOS DEL LIBRO",
                 border_style="green",
                 expand=False,
@@ -356,7 +373,7 @@ def modificar_libro(conexion):
         )
         while True:
             try:
-                campo_editar = int(input("¿Qué campo deseas editar?"))
+                campo_editar = int(input("¿Qué campo deseas editar? "))
                 if campo_editar == 1:
                     campo = "titulo"
                     break
@@ -367,21 +384,19 @@ def modificar_libro(conexion):
                     campo = "ejemplares"
                     break
                 elif campo_editar == 4:
-                    console.print("Edición de libros cancelada")
+                    console.print("Edición de libros cancelada.")
                     return
                 else:
                     console.print(
-                        "Ingresa una opción valida", style=error_style
+                        "Ingresa una opción válida", style=error_style
                     )
-                    continue
             except ValueError:
                 console.print(
                     "Por favor, ingresa un número entero válido.",
                     style=error_style,
                 )
-                continue
-        modificaciones = edicion_libros(conexion, campo, fila, id_modificar)
-        if modificaciones:
+
+        if edicion_libros(conexion, campo, fila, id_modificar):
             libros_modificados += 1
 
         otra_edicion = (
@@ -397,49 +412,58 @@ def modificar_libro(conexion):
 
 
 def edicion_libros(conexion, campo, fila, id_modificar):
+
+    if campo not in ("titulo", "autor", "ejemplares"):
+        console.print(
+            "Campo no permitido para modificación.", style=error_style
+        )
+        return False
+
     if campo == "ejemplares":
-        console.print(
-            f'El numero de {campo} actual del libro seleccionado es "{fila[campo]}"'
-        )
-        campo_editado = int(input(f"Ingresa el nuevo numero de {campo}: "))
-        console.print(
-            f"El nuevo  numero de ejemplares del libro será: {campo_editado}"
-        )
+        console.print(f'El número de {campo} actual es "{fila[campo]}"')
+        try:
+            campo_editado = int(input(f"Ingresa el nuevo número de {campo}: "))
+        except ValueError:
+            console.print(
+                "Debes ingresar un número entero válido.", style=error_style
+            )
+            return False
+        console.print(f"El nuevo número de ejemplares será: {campo_editado}")
     else:
-        console.print(
-            f'El {campo} actual del libro seleccionado es "{fila[campo]}"'
-        )
+        console.print(f'El {campo} actual es "{fila[campo]}"')
         campo_editado = input(f"Ingresa el nuevo {campo}: ").strip().title()
-        console.print(f"El nuevo {campo} del libro será {campo_editado} ")
+        console.print(f"El nuevo {campo} del libro será: {campo_editado}")
 
     while True:
-        confirmar_edicion = input("Confirmas que la edición es correcta? ")
-        if confirmar_edicion in ("si", "sí", "s", "y", "yes"):
+        confirmar = (
+            input("¿Confirmas que la edición es correcta? ").strip().lower()
+        )
+        if confirmar in ("si", "sí", "s", "y", "yes"):
             conexion.execute(
                 f"UPDATE libros SET {campo} = ? WHERE id = ?",
-                (
-                    campo_editado,
-                    id_modificar,
-                ),
+                (campo_editado, id_modificar),
             )
             conexion.commit()
+
             cursor = conexion.execute(
                 "SELECT id, titulo, autor, ejemplares FROM libros WHERE id = ?",
                 (id_modificar,),
             )
-            fila = cursor.fetchone()
+            fila_actualizada = cursor.fetchone()
+
             console.print("Libro editado correctamente.", style=check_style)
             console.print("Sus datos ahora son:")
-            console.print(f"Titulo: {fila['titulo']}")
-            console.print(f"Autor: {fila['autor']}")
-            console.print(f"Numero de Ejemplares: {fila['ejemplares']}")
+            console.print(f"Título: {fila_actualizada['titulo']}")
+            console.print(f"Autor: {fila_actualizada['autor']}")
+            console.print(
+                f"Número de Ejemplares: {fila_actualizada['ejemplares']}"
+            )
             return True
-        elif confirmar_edicion in ("no", "n"):
+        elif confirmar in ("no", "n"):
             console.print("Edición cancelada.")
             return False
         else:
-            console.print("Ingresa una opción valida", style=error_style)
-            continue
+            console.print("Ingresa una opción válida", style=error_style)
 
 
 def borrar_libro(conexion):
@@ -466,8 +490,7 @@ def borrar_libro(conexion):
 
         if fila is None:
             console.print(
-                "No se ha encontrado un libro con ese ID, por favor intenta nuevamente.",
-                style=error_style,
+                "No se ha encontrado un libro con ese ID.", style=error_style
             )
             continue
 
@@ -481,10 +504,7 @@ def borrar_libro(conexion):
         confirmar_delete = input("(s/n): ").strip().lower()
 
         if confirmar_delete in ("si", "sí", "s", "y", "yes"):
-            conexion.execute(
-                "DELETE FROM libros WHERE id = ?",
-                (id_borrar,),
-            )
+            conexion.execute("DELETE FROM libros WHERE id = ?", (id_borrar,))
             conexion.commit()
             libros_eliminados += 1
             console.print("Libro borrado correctamente.", style=check_style)
@@ -503,10 +523,7 @@ def borrar_libro(conexion):
                     )
                 return
             else:
-                console.print(
-                    "Ingresa una opción válida",
-                    style=error_style,
-                )
+                console.print("Ingresa una opción válida", style=error_style)
 
 
 menu_empleado_ascci()
@@ -514,18 +531,16 @@ menu_empleado_ascci()
 while True:
     try:
         opciones_empleado()
-        opcion_menu = input("Ingresa la opción deseada: ")
+        opcion_menu = input("Ingresa la opción deseada: ").strip()
 
         if opcion_menu == "1":
-            conexion = db.conectar()
-            conexion.row_factory = sqlite3.Row
             console.print(
                 "Opción 1 Seleccionada:\n[bold white]Ingresar Libro[/bold white]"
             )
+            conexion = db.conectar()
+            conexion.row_factory = sqlite3.Row
             try:
                 insertar_libro(conexion)
-            except Exception as e:
-                console.print(f"[red]Ha ocurrido el error: {e}[/red]")
             finally:
                 conexion.close()
 
@@ -537,10 +552,9 @@ while True:
             conexion.row_factory = sqlite3.Row
             try:
                 modificar_libro(conexion)
-            except Exception as e:
-                console.print(f"[red]Ha ocurrido el error: {e}[/red]")
             finally:
                 conexion.close()
+
         elif opcion_menu == "3":
             console.print(
                 "Opción 3 Seleccionada:\n[bold white]Borrar Libro[/bold white]"
@@ -549,36 +563,31 @@ while True:
             conexion.row_factory = sqlite3.Row
             try:
                 borrar_libro(conexion)
-            except Exception as e:
-                console.print(f"[red]Ha ocurrido el error: {e}[/red]")
             finally:
                 conexion.close()
 
         elif opcion_menu == "4":
-            conexion = db.conectar()
-            conexion.row_factory = sqlite3.Row
             console.print(
                 "Opción 4 Seleccionada:\n[bold white]Ver Inventario[/bold white]"
             )
+            conexion = db.conectar()
+            conexion.row_factory = sqlite3.Row
             try:
                 ver_inventario(conexion)
-            except Exception as e:
-                console.print(f"[red]Error al cargar el inventario: {e}[/red]")
             finally:
                 conexion.close()
 
         elif opcion_menu == "5":
+            console.print(
+                "Opción 5 Seleccionada:\n[bold white]Ver Solicitudes de Préstamo[/bold white]"
+            )
             conexion = db.conectar()
             conexion.row_factory = sqlite3.Row
-            console.print(
-                "Opción 5 Seleccionada:\n[bold white]Ver Solicitudes de Prestamo[/bold white]"
-            )
             try:
                 gestionar_solicitudes(conexion)
-            except Exception as e:
-                console.print(f"[red]Ha ocurrido el error: {e}[/red]")
             finally:
                 conexion.close()
+
         elif opcion_menu == "6":
             console.print(
                 "Opción 6 Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"
@@ -586,12 +595,8 @@ while True:
             break
 
         else:
-            console.print("Ingresa una opción válida")
+            console.print("Ingresa una opción válida", style=error_style)
 
-    except ValueError:
-        console.print(
-            "Por favor, ingresa un número entero válido.", style=error_style
-        )
     except KeyboardInterrupt:
         console.print(
             "\nPrograma interrumpido por el usuario.", style=error_style
