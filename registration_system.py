@@ -1,1 +1,0 @@
-print("Registraton system file has been run")
