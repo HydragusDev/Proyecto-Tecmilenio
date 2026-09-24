@@ -8,18 +8,14 @@ from tkinter import messagebox
 
 def validar_aceptacion():
     if aceptar_var.get() == 1:
-
-        messagebox.showinfo(
-            "Mensaje",
-            "Gracias por aceptar"
-        )
+        messagebox.showinfo("Mensaje", "Gracias por aceptar")
 
         root.destroy()
 
     else:
         messagebox.showwarning(
             "Atención",
-            "Debes aceptar los términos y condiciones para continuar."
+            "Debes aceptar los términos y condiciones para continuar.",
         )
 
 
@@ -38,6 +34,7 @@ label_empleado = tk.Label(
     font=("Arial", 12, "bold"),
 )
 label_empleado.pack(pady=5)
+
 label_textoemp = tk.Label(
     root,
     text="1. EL empleado debe iniciar sesion con un usuario validos para acceder al sistema."
@@ -58,7 +55,7 @@ checkbox = tk.Checkbutton(
     root,
     text="Acepto los términos y condiciones",
     variable=aceptar_var,
-    font=("Arial", 12)
+    font=("Arial", 12),
 )
 checkbox.pack(pady=15)
 
@@ -66,7 +63,7 @@ boton_aceptar = tk.Button(
     root,
     text="Continuar",
     font=("Arial", 11, "bold"),
-    command=validar_aceptacion
+    command=validar_aceptacion,
 )
 boton_aceptar.pack(pady=5)
 

@@ -9,10 +9,12 @@ from tkinter import messagebox
 def validar_aceptacion():
     if aceptar_var.get() == 1:
         messagebox.showinfo("Mensaje", "Gracias por aceptar")
+
         root.destroy()
+
     else:
         messagebox.showwarning(
-            "Atención", "Debes aceptar las reglas para continuar"
+            "Atención", "Debes aceptar las reglas para continuar."
         )
 
 
@@ -25,16 +27,7 @@ label_titulo = tk.Label(
 )
 label_titulo.pack(pady=10)
 
-label_cliente = tk.Label(
-    root,
-    text="Cliente",
-    font=("Arial", 12, "bold"),
-)
-label_cliente = tk.Label(
-    root,
-    text="Cliente",
-    font=("Arial", 12, "bold"),
-)
+
 label_cliente = tk.Label(
     root,
     text="Cliente",
