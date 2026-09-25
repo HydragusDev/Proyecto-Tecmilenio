@@ -8,6 +8,8 @@ from rich.table import Table
 
 import database as db
 
+import sys
+
 console = Console()
 
 error_style = Style(color="red", bold=True, blink=True)
@@ -338,180 +340,185 @@ def agendar_devolucion(conexion, id_usuario):
         console.print(f"Ha ocurrido el error: {e}", style=error_style)
 
 
-while True:
-    try:
-        opciones_usuario()
-        opcion_menu = int(input("Ingresa la opción deseada: "))
 
-        if opcion_menu == 1:
-            while True:
-                try:
-                    opciones_ver_catalogo()
-                    opcion_select_verCata = int(
-                        input("Ingresa la opción deseada: ")
-                    )
-                    if opcion_select_verCata == 1:
-                        console.print(
-                            "Opción Seleccionada:\n[bold white]Ver Catalogo Completo[/bold white]"
+def open_main_menu_user():
+
+    menu_usuario_ascci()
+
+    while True:
+        try:
+            opciones_usuario()
+            opcion_menu = int(input("Ingresa la opción deseada: "))
+
+            if opcion_menu == 1:
+                while True:
+                    try:
+                        opciones_ver_catalogo()
+                        opcion_select_verCata = int(
+                            input("Ingresa la opción deseada: ")
                         )
-                        try:
-                            conexion = db.conectar()
-                            conexion.row_factory = sqlite3.Row
-                            ver_inventario(conexion)
-                        except Exception as e:
+                        if opcion_select_verCata == 1:
                             console.print(
-                                f"[red]Error al cargar el inventario: {e}[/red]",
-                                style=error_style,
+                                "Opción Seleccionada:\n[bold white]Ver Catalogo Completo[/bold white]"
                             )
-                        finally:
-                            conexion.close()
-
-                    elif opcion_select_verCata == 2:
-                        console.print(
-                            "Opción Seleccionada:\n[bold white]Ver Catalogo Disponible[/bold white]"
-                        )
-                        try:
-                            conexion = db.conectar()
-                            conexion.row_factory = sqlite3.Row
-                            ver_inventario_disponibles(conexion)
-                        except Exception as e:
-                            console.print(
-                                f"[red]Error al cargar disponibles: {e}[/red]",
-                                style=error_style,
-                            )
-                        finally:
-                            conexion.close()
-
-                    elif opcion_select_verCata == 3:
-                        console.print(
-                            "Opción Seleccionada:\n[bold white]Busqueda Especifica[/bold white]"
-                        )
-                        while True:
                             try:
-                                opciones_busqueda_especifica()
-                                criterio_busqueda = (
-                                    input("Ingresa tu opción (1-3): ")
-                                    .strip()
-                                    .lower()
-                                )
-
-                                if criterio_busqueda in (
-                                    "1",
-                                    "titulo",
-                                    "title",
-                                ):
-                                    campo_buscar = "titulo"
-                                    buscar = True
-                                    break
-                                elif criterio_busqueda in (
-                                    "2",
-                                    "autor",
-                                    "author",
-                                ):
-                                    campo_buscar = "autor"
-                                    buscar = True
-                                    break
-                                elif criterio_busqueda in (
-                                    "3",
-                                    "salir",
-                                    "exit",
-                                ):
-                                    buscar = False
-                                    break
-                                else:
-                                    console.print(
-                                        "Ingresa una opción válida",
-                                        style=error_style,
-                                    )
-                                    buscar = False
-                                    continue
-                            except Exception as e:
-                                console.print(
-                                    f"Ha ocurrido el error: {e}",
-                                    style=error_style,
-                                )
-                                buscar = False
-                                break
-
-                        if buscar:
-                            try:
-                                busqueda = input(
-                                    f"Ingresa el {campo_buscar} a buscar: "
-                                ).strip()
                                 conexion = db.conectar()
                                 conexion.row_factory = sqlite3.Row
-                                busqueda_especifica(
-                                    conexion, campo_buscar, busqueda
-                                )
+                                ver_inventario(conexion)
                             except Exception as e:
                                 console.print(
-                                    f"Ha ocurrido el error: {e}",
+                                    f"[red]Error al cargar el inventario: {e}[/red]",
                                     style=error_style,
                                 )
                             finally:
                                 conexion.close()
 
-                    elif opcion_select_verCata == 4:
-                        break
+                        elif opcion_select_verCata == 2:
+                            console.print(
+                                "Opción Seleccionada:\n[bold white]Ver Catalogo Disponible[/bold white]"
+                            )
+                            try:
+                                conexion = db.conectar()
+                                conexion.row_factory = sqlite3.Row
+                                ver_inventario_disponibles(conexion)
+                            except Exception as e:
+                                console.print(
+                                    f"[red]Error al cargar disponibles: {e}[/red]",
+                                    style=error_style,
+                                )
+                            finally:
+                                conexion.close()
 
-                    else:
+                        elif opcion_select_verCata == 3:
+                            console.print(
+                                "Opción Seleccionada:\n[bold white]Busqueda Especifica[/bold white]"
+                            )
+                            while True:
+                                try:
+                                    opciones_busqueda_especifica()
+                                    criterio_busqueda = (
+                                        input("Ingresa tu opción (1-3): ")
+                                        .strip()
+                                        .lower()
+                                    )
+
+                                    if criterio_busqueda in (
+                                        "1",
+                                        "titulo",
+                                        "title",
+                                    ):
+                                        campo_buscar = "titulo"
+                                        buscar = True
+                                        break
+                                    elif criterio_busqueda in (
+                                        "2",
+                                        "autor",
+                                        "author",
+                                    ):
+                                        campo_buscar = "autor"
+                                        buscar = True
+                                        break
+                                    elif criterio_busqueda in (
+                                        "3",
+                                        "salir",
+                                        "exit",
+                                    ):
+                                        buscar = False
+                                        break
+                                    else:
+                                        console.print(
+                                            "Ingresa una opción válida",
+                                            style=error_style,
+                                        )
+                                        buscar = False
+                                        continue
+                                except Exception as e:
+                                    console.print(
+                                        f"Ha ocurrido el error: {e}",
+                                        style=error_style,
+                                    )
+                                    buscar = False
+                                    break
+
+                            if buscar:
+                                try:
+                                    busqueda = input(
+                                        f"Ingresa el {campo_buscar} a buscar: "
+                                    ).strip()
+                                    conexion = db.conectar()
+                                    conexion.row_factory = sqlite3.Row
+                                    busqueda_especifica(
+                                        conexion, campo_buscar, busqueda
+                                    )
+                                except Exception as e:
+                                    console.print(
+                                        f"Ha ocurrido el error: {e}",
+                                        style=error_style,
+                                    )
+                                finally:
+                                    conexion.close()
+
+                        elif opcion_select_verCata == 4:
+                            break
+
+                        else:
+                            console.print(
+                                "Ingresa una opción válida", style=error_style
+                            )
+
+                    except ValueError:
                         console.print(
-                            "Ingresa una opción válida", style=error_style
+                            "Por favor, ingresa un número entero válido.",
+                            style=error_style,
                         )
 
-                except ValueError:
-                    console.print(
-                        "Por favor, ingresa un número entero válido.",
-                        style=error_style,
-                    )
+            elif opcion_menu == 2:
+                console.print(
+                    "Opción Seleccionada:\n[bold white]Hacer Solicitud de Prestamo[/bold white]"
+                )
+                id_usuario_demo = 1
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    solicitar_prestamo(conexion, id_usuario_demo)
+                except Exception as e:
+                    console.print(f"Ha ocurrido el error: {e}", style=error_style)
+                finally:
+                    conexion.close()
 
-        elif opcion_menu == 2:
+            elif opcion_menu == 3:
+                console.print(
+                    "Opción Seleccionada:\n[bold white]Agendar Devolución[/bold white]"
+                )
+                id_usuario_demo = 1
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    agendar_devolucion(conexion, id_usuario_demo)
+                except Exception as e:
+                    console.print(f"Ha ocurrido el error: {e}", style=error_style)
+                finally:
+                    conexion.close()
+
+            elif opcion_menu == 4:
+                console.print(
+                    "Opción Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"
+                )
+                break
+
+            else:
+                console.print("Ingresa una opción válida", style=error_style)
+
+        except ValueError:
             console.print(
-                "Opción Seleccionada:\n[bold white]Hacer Solicitud de Prestamo[/bold white]"
+                "Por favor, ingresa un número entero válido.", style=error_style
             )
-            id_usuario_demo = 1
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                solicitar_prestamo(conexion, id_usuario_demo)
-            except Exception as e:
-                console.print(f"Ha ocurrido el error: {e}", style=error_style)
-            finally:
-                conexion.close()
-
-        elif opcion_menu == 3:
+        except KeyboardInterrupt:
             console.print(
-                "Opción Seleccionada:\n[bold white]Agendar Devolución[/bold white]"
-            )
-            id_usuario_demo = 1
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                agendar_devolucion(conexion, id_usuario_demo)
-            except Exception as e:
-                console.print(f"Ha ocurrido el error: {e}", style=error_style)
-            finally:
-                conexion.close()
-
-        elif opcion_menu == 4:
-            console.print(
-                "Opción Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"
+                "\nPrograma interrumpido por el usuario.", style=error_style
             )
             break
-
-        else:
-            console.print("Ingresa una opción válida", style=error_style)
-
-    except ValueError:
-        console.print(
-            "Por favor, ingresa un número entero válido.", style=error_style
-        )
-    except KeyboardInterrupt:
-        console.print(
-            "\nPrograma interrumpido por el usuario.", style=error_style
-        )
-        break
-    except Exception as e:
-        console.print(
-            f"Ha ocurrido un error inesperado: {e}", style=error_style
-        )
+        except Exception as e:
+            console.print(
+                f"Ha ocurrido un error inesperado: {e}", style=error_style
+            )

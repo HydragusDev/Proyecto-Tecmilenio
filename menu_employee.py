@@ -6,12 +6,18 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 
+import sys
+
 import database as db
 
 console = Console()
 
 error_style = Style(color="red", bold=True, blink=True)
 check_style = Style(color="green", blink=True)
+
+
+
+
 
 
 def menu_empleado_ascci():
@@ -915,91 +921,92 @@ def borrar_libro(conexion):
                 f"Error inesperado al borrar el libro: {e}", style=error_style
             )
 
+#main
+def open_main_menu_employee():
+    menu_empleado_ascci()
 
-menu_empleado_ascci()
+    while True:
+        conexion = None
+        try:
+            opciones_empleado()
+            opcion_menu = input("Ingresa la opción deseada: ").strip()
 
-while True:
-    conexion = None
-    try:
-        opciones_empleado()
-        opcion_menu = input("Ingresa la opción deseada: ").strip()
+            if opcion_menu == "1":
+                console.print(
+                    "Opción 1 Seleccionada:\n[bold white]Ingresar Libro[/bold white]"
+                )
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    insertar_libro(conexion)
+                finally:
+                    if conexion:
+                        conexion.close()
 
-        if opcion_menu == "1":
+            elif opcion_menu == "2":
+                console.print(
+                    "Opción 2 Seleccionada:\n[bold white]Modificar Libro[/bold white]"
+                )
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    modificar_libro(conexion)
+                finally:
+                    if conexion:
+                        conexion.close()
+
+            elif opcion_menu == "3":
+                console.print(
+                    "Opción 3 Seleccionada:\n[bold white]Borrar Libro[/bold white]"
+                )
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    borrar_libro(conexion)
+                finally:
+                    if conexion:
+                        conexion.close()
+
+            elif opcion_menu == "4":
+                console.print(
+                    "Opción 4 Seleccionada:\n[bold white]Ver Inventario[/bold white]"
+                )
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    ver_inventario(conexion)
+                finally:
+                    if conexion:
+                        conexion.close()
+
+            elif opcion_menu == "5":
+                console.print(
+                    "Opción 5 Seleccionada:\n[bold white]Ver Solicitudes de Préstamo[/bold white]"
+                )
+                try:
+                    conexion = db.conectar()
+                    conexion.row_factory = sqlite3.Row
+                    gestionar_solicitudes(conexion)
+                finally:
+                    if conexion:
+                        conexion.close()
+
+            elif opcion_menu == "6":
+                console.print(
+                    "Opción 6 Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"
+                )
+                sys.exit()
+
+            else:
+                console.print("Ingresa una opción válida", style=error_style)
+
+        except KeyboardInterrupt:
             console.print(
-                "Opción 1 Seleccionada:\n[bold white]Ingresar Libro[/bold white]"
-            )
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                insertar_libro(conexion)
-            finally:
-                if conexion:
-                    conexion.close()
-
-        elif opcion_menu == "2":
-            console.print(
-                "Opción 2 Seleccionada:\n[bold white]Modificar Libro[/bold white]"
-            )
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                modificar_libro(conexion)
-            finally:
-                if conexion:
-                    conexion.close()
-
-        elif opcion_menu == "3":
-            console.print(
-                "Opción 3 Seleccionada:\n[bold white]Borrar Libro[/bold white]"
-            )
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                borrar_libro(conexion)
-            finally:
-                if conexion:
-                    conexion.close()
-
-        elif opcion_menu == "4":
-            console.print(
-                "Opción 4 Seleccionada:\n[bold white]Ver Inventario[/bold white]"
-            )
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                ver_inventario(conexion)
-            finally:
-                if conexion:
-                    conexion.close()
-
-        elif opcion_menu == "5":
-            console.print(
-                "Opción 5 Seleccionada:\n[bold white]Ver Solicitudes de Préstamo[/bold white]"
-            )
-            try:
-                conexion = db.conectar()
-                conexion.row_factory = sqlite3.Row
-                gestionar_solicitudes(conexion)
-            finally:
-                if conexion:
-                    conexion.close()
-
-        elif opcion_menu == "6":
-            console.print(
-                "Opción 6 Seleccionada:\n[bold white]Salir\nGracias por utilizar el programa.[/bold white]"
+                "\nPrograma interrumpido por el usuario.", style=error_style
             )
             break
-
-        else:
-            console.print("Ingresa una opción válida", style=error_style)
-
-    except KeyboardInterrupt:
-        console.print(
-            "\nPrograma interrumpido por el usuario.", style=error_style
-        )
-        break
-    except Exception as e:
-        console.print(
-            f"Ocurrió un error inesperado en el menú principal: {e}",
-            style=error_style,
-        )
+        except Exception as e:
+            console.print(
+                f"Ocurrió un error inesperado en el menú principal: {e}",
+                style=error_style,
+            )

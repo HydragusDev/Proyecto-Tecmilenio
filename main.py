@@ -5,8 +5,7 @@ Punto de entrada del sistema de biblioteca. Aqui vive el flujo de
 arranque (pantalla de carga) y el menu inicial (login / registro /
 salir)."""
 # Imports
-import os
-import runpy
+
 import sys
 import threading
 import time
@@ -22,7 +21,8 @@ import database as db
 from password_registration import register_user
 from password_verification import verify_login_main_loop
 
-
+from menu_employee import open_main_menu_employee  
+from menu_user import open_main_menu_user
 
 
 
@@ -77,7 +77,7 @@ def main_menu() -> str:
             border_style="cyan",
         )
     )
-    option = Prompt.ask("Elige una opcion >", choices=["1", "2", "3"])
+    option = Prompt.ask("Elige una opción >", choices=["1", "2", "3"])
 
     #Option 1: Login
     if option == "1":
@@ -87,26 +87,21 @@ def main_menu() -> str:
 
             #Depending on the role, shows employee or user options
             if user["role"] == "empleado":
-                runpy.run_path(os.path.join(os.path.dirname(__file__), "menu_employe.py"))
+                open_main_menu_employee()
             else:
-                runpy.run_path(os.path.join(os.path.dirname(__file__), "menu_user.py"))
+                open_main_menu_user()
 
     #Option 2: Registering
     elif option == "2":
         register_user() #Calls registration function from password_registration
+        print("Regresando al menu principal...")
 
-    #OPtion 3: close
+
+    #OPtion 3: Close
     elif option == "3":
         console.print("[bold red]Cerrando el sistema...[/bold red]") #Closes program
     return option
 
-
-
-
-
-    input_menu = int(
-        input("""Choose an Option. 1- Employee Menu.  2- User menu. > """)
-    )
 
 # Main
 def main() -> None:
