@@ -749,17 +749,26 @@ def edicion_libros(conexion, campo, fila, id_modificar):
         Edita el campo 'titulo' actualizándolo con un nuevo valor.
     """
     try:
-        if campo not in ("titulo", "autor", "ejemplares"):
+        allowed_fields = {
+            "titulo": "titulo",
+            "autor": "autor",
+            "ejemplares": "ejemplares",
+        }
+        campo_seguro = allowed_fields.get(campo)
+
+        if campo_seguro is None:
             console.print(
                 "Campo no permitido para modificación.", style=error_style
             )
             return False
 
-        if campo == "ejemplares":
-            console.print(f'El número de {campo} actual es "{fila[campo]}"')
+        if campo_seguro == "ejemplares":
+            console.print(
+                f'El número de {campo_seguro} actual es "{fila[campo_seguro]}"'
+            )
             try:
                 campo_editado = int(
-                    input(f"Ingresa el nuevo número de {campo}: ")
+                    input(f"Ingresa el nuevo número de {campo_seguro}: ")
                 )
             except ValueError:
                 console.print(
@@ -771,11 +780,17 @@ def edicion_libros(conexion, campo, fila, id_modificar):
                 f"El nuevo número de ejemplares será: {campo_editado}"
             )
         else:
-            console.print(f'El {campo} actual es "{fila[campo]}"')
-            campo_editado = (
-                input(f"Ingresa el nuevo {campo}: ").strip().title()
+            console.print(
+                f'El {campo_seguro} actual es "{fila[campo_seguro]}"'
             )
-            console.print(f"El nuevo {campo} del libro será: {campo_editado}")
+            campo_editado = (
+                input(f"Ingresa el nuevo {campo_seguro}: ")
+                .strip()
+                .title()
+            )
+            console.print(
+                f"El nuevo {campo_seguro} del libro será: {campo_editado}"
+            )
 
         while True:
             confirmar = (
@@ -785,7 +800,7 @@ def edicion_libros(conexion, campo, fila, id_modificar):
             )
             if confirmar in ("si", "sí", "s", "y", "yes"):
                 conexion.execute(
-                    f"UPDATE libros SET {campo} = ? WHERE id = ?",
+                    f"UPDATE libros SET {campo_seguro} = ? WHERE id = ?",
                     (campo_editado, id_modificar),
                 )
                 conexion.commit()
@@ -922,6 +937,9 @@ def borrar_libro(conexion):
             )
 
 #main
+
+
+
 def open_main_menu_employee():
     menu_empleado_ascci()
 

@@ -130,8 +130,17 @@ def ver_inventario_disponibles(conexion):
 
 def busqueda_especifica(conexion, criterio_busqueda, busqueda):
     try:
+        allowed_fields = {"titulo": "titulo", "autor": "autor"}
+        campo_seguro = allowed_fields.get(criterio_busqueda)
+
+        if campo_seguro is None:
+            console.print(
+                "Campo de búsqueda inválido.", style=error_style
+            )
+            return False
+
         cursor = conexion.execute(
-            f"SELECT id, titulo, autor FROM libros WHERE {criterio_busqueda} LIKE ?",
+            f"SELECT id, titulo, autor FROM libros WHERE {campo_seguro} LIKE ?",
             (f"%{busqueda}%",),
         )
 
