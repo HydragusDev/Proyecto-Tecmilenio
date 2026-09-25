@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 from pyfiglet import figlet_format
 from rich.console import Console
@@ -6,18 +7,12 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 
-import sys
-
 import database as db
 
 console = Console()
 
 error_style = Style(color="red", bold=True, blink=True)
 check_style = Style(color="green", blink=True)
-
-
-
-
 
 
 def menu_empleado_ascci():
@@ -921,7 +916,8 @@ def borrar_libro(conexion):
                 f"Error inesperado al borrar el libro: {e}", style=error_style
             )
 
-#main
+
+# main
 def open_main_menu_employee():
     menu_empleado_ascci()
 

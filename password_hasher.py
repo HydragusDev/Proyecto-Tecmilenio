@@ -1,6 +1,5 @@
-
-#Uses argon2 password hasher to SECURELY store and verify passwords.
-#creates an object PasswordHasher object (ph) with methods ph.hash and ph.verify both for hashing and salting a new password as well as for verifying a hash.
+# Uses argon2 password hasher to SECURELY store and verify passwords.
+# creates an object PasswordHasher object (ph) with methods ph.hash and ph.verify both for hashing and salting a new password as well as for verifying a hash.
 
 
 import gc

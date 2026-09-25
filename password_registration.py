@@ -1,20 +1,25 @@
-import os
-
+import pwinput
+from email_validator import EmailNotValidError, validate_email
 from rich.console import Console
 from rich.prompt import Prompt
+from rich.style import Style
 
 import database as db
 from password_hasher import hash_password
 
 console = Console()
 
-import pwinput
+error_style = Style(color="red", bold=True, blink=True)
+check_style = Style(color="green", blink=True)
+
 
 def register_user() -> None:
     while True:
         username = Prompt.ask("Nombre de usuario").strip()
         if not username:
-            console.print("[red]El nombre de usuario no puede estar vacio.[/red]")
+            console.print(
+                "El nombre de usuario no puede estar vacio.", style=error_style
+            )
             continue
         break
 
@@ -22,56 +27,67 @@ def register_user() -> None:
         mail = Prompt.ask("Correo electronico").strip().lower()
 
         if not mail:
-            console.print("[red]El correo no puede estar vacio.[/red]")
+            console.print("El correo no puede estar vacio.", style=error_style)
             continue
 
-        if db.verify_mail(mail):
-            console.print("[red]Ya existe una cuenta con ese correo.[/red]")
+        # 1. Validar sintaxis del correo electrónico
+        try:
+            email_info = validate_email(mail, check_deliverability=False)
+            mail = email_info.normalized
+        except EmailNotValidError as e:
+            console.print(
+                f"Formato de correo inválido: {e}", style=error_style
+            )
+            continue
+
+        # 2. Verificar existencia en la base de datos
+        try:
+            if db.verify_mail(mail):
+                console.print(
+                    "Ya existe una cuenta con ese correo.",
+                    style=error_style,
+                )
+                continue
+        except Exception as e:
+            console.print(
+                f"Error al verificar el correo: {e}", style=error_style
+            )
             continue
 
         break
 
     while True:
-        # Changed to pwinput to show masking characters (e.g., *)
-        input_password = pwinput.pwinput("Contrasena > ", mask="*")
-        input_confirmation = pwinput.pwinput("Confirma tu contrasena > ", mask="*")
+        input_password = pwinput.pwinput("Contraseña > ", mask="*")
+        input_confirmation = pwinput.pwinput(
+            "Confirma tu contraseña > ", mask="*"
+        )
 
         if not input_password:
-            console.print("[red]La contraseña no puede estar vacia.[/red]")
+            console.print(
+                "La contraseña no puede estar vacia.", style=error_style
+            )
             continue
 
         if input_password != input_confirmation:
-            console.print("[red]Las contraseñas no coinciden.[/red]")
+            console.print("Las contraseñas no coinciden.", style=error_style)
             continue
 
-        # Convert to bytes after confirming they match
         password_bytes = input_password.encode("utf-8")
-
-        # Hash the password
         hashed_password = hash_password(password_bytes)
-
         break
 
-    
-
-    role = Prompt.ask(
-        "Role >",
-        choices=["usuario", "empleado"]
-    )
-
-    role_map = {
-        "usuario": "user_role",
-        "empleado": "employee_role"
-    }
-
+    role = Prompt.ask("Role >", choices=["usuario", "empleado"])
+    role_map = {"usuario": "user_role", "empleado": "employee_role"}
     role = role_map[role]
 
-    db.user(
-        username,
-        mail,
-        hashed_password,
-        role
-    )
-
-    console.print(
-        f"[green]Cuenta creada correctamente para {username}.[/green]")
+    # 3. Guardado en la base de datos dentro de un bloque try...except
+    try:
+        db.user(username, mail, hashed_password, role)
+        console.print(
+            f"Cuenta creada correctamente para {username}.", style=check_style
+        )
+    except Exception as e:
+        console.print(
+            f"Error al registrar el usuario en la base de datos: {e}",
+            style=error_style,
+        )

@@ -1,71 +1,106 @@
 import gc
 import sys
 
-
 import pwinput
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.style import Style
+
 import database as db
 from password_hasher import verify_password
 
+console = Console()
 
-#User, mail, username, bytes_hashed_password, 
+error_style = Style(color="red", bold=True, blink=True)
+check_style = Style(color="green", blink=True)
 
-
-#Book
 
 def verify_login_main_loop() -> dict | None:
     attempts = 0
 
     while True:
         try:
-            print("=== USER LOGIN SYSTEM ===")
-            input_mail = input("Email > ").strip().lower()
+            console.print(
+                "=== SISTEMA DE INICIO DE SESIÓN ===", style="bold blue"
+            )
+            input_mail = Prompt.ask("Correo electrónico").strip().lower()
 
             if not input_mail:
-                print("Email is required.")
+                console.print(
+                    "El correo no puede estar vacío.", style=error_style
+                )
                 continue
 
-            print("=== Username LOGIN ===")
-            input_username = input("Username > ").strip().lower()
+            input_username = Prompt.ask("Nombre de usuario").strip()
 
             if not input_username:
-                print("Username is required.")
+                console.print(
+                    "El nombre de usuario no puede estar vacío.",
+                    style=error_style,
+                )
                 continue
 
-            
-            user_temp = db.obtain_from_mail(input_mail)
-            if user_temp is None:
+            try:
+                user_temp = db.obtain_from_mail(input_mail)
+            except Exception as e:
+                console.print(
+                    f"Error al conectar con la base de datos: {e}",
+                    style=error_style,
+                )
+                continue
+
+            if (
+                user_temp is None
+                or user_temp.get("username") != input_username
+            ):
                 attempts += 1
-                print(f"\nAccess Negado: Correo o contraseña invalidos. Le quedan {attempts} intentos.")
+                console.print(
+                    f"Acceso denegado: Datos inválidos. Le quedan {3 - attempts} intentos.",
+                    style=error_style,
+                )
                 if attempts >= 3:
-                    print("Demasiados intentos, intente de nuevo")
+                    console.print(
+                        "Demasiados intentos fallidos. Saliendo del sistema...",
+                        style=error_style,
+                    )
                     sys.exit(1)
                 continue
 
-            password_input_bytes = pwinput.pwinput("Password > ", mask="*").encode("utf-8")
+            password_input_bytes = pwinput.pwinput(
+                "Contraseña > ", mask="*"
+            ).encode("utf-8")
 
             stored_hash = user_temp["hashed_password"]
 
             if isinstance(stored_hash, (bytes, bytearray)):
                 stored_hash = stored_hash.decode("utf-8", errors="ignore")
 
-            verified = verify_password(stored_hash, password_input_bytes) #verify password with hash.
+            verified = verify_password(stored_hash, password_input_bytes)
 
             if verified:
-                print("\nAccess granted. Welcome aboard Captain.")
+                console.print(
+                    "\nAcceso concedido. Bienvenido al sistema.",
+                    style=check_style,
+                )
                 return dict(user_temp)
 
             attempts += 1
-            print("\nAccess Denied: Invalid email or password.")
+            console.print(
+                f"Acceso denegado: Datos inválidos. Le quedan {3 - attempts} intentos.",
+                style=error_style,
+            )
 
             if attempts >= 3:
-                print("Too many failed attempts. Exiting.")
+                console.print(
+                    "Demasiados intentos fallidos. Saliendo del sistema...",
+                    style=error_style,
+                )
                 sys.exit(1)
 
         except KeyboardInterrupt:
-            print("\nLogin cancelado.")
+            console.print("\nInicio de sesión cancelado.", style=error_style)
             sys.exit(0)
 
-        #Cleans up
         finally:
             if "password_input_bytes" in locals():
                 del password_input_bytes
@@ -75,4 +110,7 @@ def verify_login_main_loop() -> dict | None:
 if __name__ == "__main__":
     usuario = verify_login_main_loop()
     if usuario is not None:
-        print(f"Logged in as: {usuario['role']} ({usuario['mail']})")
+        console.print(
+            f"Sesión iniciada correctamente como: {usuario['role']} ({usuario['mail']})",
+            style=check_style,
+        )

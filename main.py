@@ -16,15 +16,10 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.prompt import Prompt
 
 import database as db
-
-
+from menu_employee import open_main_menu_employee
+from menu_user import open_main_menu_user
 from password_registration import register_user
 from password_verification import verify_login_main_loop
-
-from menu_employee import open_main_menu_employee  
-from menu_user import open_main_menu_user
-
-
 
 console = Console()
 
@@ -38,6 +33,8 @@ TIMEOUT_SECONDS = TIMEOUT_MINUTES * 60
 def exit_on_timeout():
     print("El programa se esta cerrando debido a 5 minutos de inactividad.")
     sys.exit(0)
+
+
 # Resets Timeout function timer on interaction
 def reset_timer():
     global inactivity_timer
@@ -45,8 +42,10 @@ def reset_timer():
     if inactivity_timer is not None:
         inactivity_timer.cancel()
 
-    inactivity_timer = threading.Timer(TIMEOUT_SECONDS, exit_on_timeout) #Timer
-    inactivity_timer.daemon = True #background thread.
+    inactivity_timer = threading.Timer(
+        TIMEOUT_SECONDS, exit_on_timeout
+    )  # Timer
+    inactivity_timer.daemon = True  # background thread.
     inactivity_timer.start()
 
 
@@ -79,54 +78,56 @@ def main_menu() -> str:
     )
     option = Prompt.ask("Elige una opción >", choices=["1", "2", "3"])
 
-    #Option 1: Login
+    # Option 1: Login
     if option == "1":
-        user = verify_login_main_loop() #Takes login function from password_verification
+        user = (
+            verify_login_main_loop()
+        )  # Takes login function from password_verification
 
         if user is not None:
-
-            #Depending on the role, shows employee or user options
+            # Depending on the role, shows employee or user options
             if user["role"] == "empleado":
                 open_main_menu_employee()
             else:
                 open_main_menu_user()
 
-    #Option 2: Registering
+    # Option 2: Registering
     elif option == "2":
-        register_user() #Calls registration function from password_registration
+        register_user()  # Calls registration function from password_registration
         print("Regresando al menu principal...")
 
-
-    #OPtion 3: Close
+    # OPtion 3: Close
     elif option == "3":
-        console.print("[bold red]Cerrando el sistema...[/bold red]") #Closes program
+        console.print(
+            "[bold red]Cerrando el sistema...[/bold red]"
+        )  # Closes program
     return option
 
 
 # Main
 def main() -> None:
 
-    #Starts timer
+    # Starts timer
     global inactivity_timer
 
     db.crear_tablas()
     mostrar_pantalla_carga()
-    print(f"Nota: el programa se cerrará en {TIMEOUT_MINUTES} minutos de inactividad")
+    print(
+        f"Nota: el programa se cerrará en {TIMEOUT_MINUTES} minutos de inactividad"
+    )
 
     while True:
         try:
-
-            #Opens main menu -> go to function
+            # Opens main menu -> go to function
             option = main_menu()
 
-
-            #otherwise
-            #Closes program on choice within menu
+            # otherwise
+            # Closes program on choice within menu
             if option == "3":
                 print("Exiting Program")
                 break
 
-            #Breaks countdown manually.
+            # Breaks countdown manually.
             if inactivity_timer is not None:
                 inactivity_timer.cancel()
                 inactivity_timer = None
@@ -139,4 +140,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

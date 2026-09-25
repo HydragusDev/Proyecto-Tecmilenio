@@ -72,7 +72,10 @@ def verify_mail(mail: str) -> bool:
 
 # Defines a user.
 def user(
-    username: str, mail: str, hashed_password: str, role: str  # <-- CAMBIADO AQUÍ
+    username: str,
+    mail: str,
+    hashed_password: str,
+    role: str,  # <-- CAMBIADO AQUÍ
 ) -> None:
     """Inserta un nuevo usuario en la base de datos."""
     conexion = conectar()

@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 from pyfiglet import figlet_format
 from rich.console import Console
@@ -7,8 +8,6 @@ from rich.style import Style
 from rich.table import Table
 
 import database as db
-
-import sys
 
 console = Console()
 
@@ -340,7 +339,6 @@ def agendar_devolucion(conexion, id_usuario):
         console.print(f"Ha ocurrido el error: {e}", style=error_style)
 
 
-
 def open_main_menu_user():
 
     menu_usuario_ascci()
@@ -482,7 +480,9 @@ def open_main_menu_user():
                     conexion.row_factory = sqlite3.Row
                     solicitar_prestamo(conexion, id_usuario_demo)
                 except Exception as e:
-                    console.print(f"Ha ocurrido el error: {e}", style=error_style)
+                    console.print(
+                        f"Ha ocurrido el error: {e}", style=error_style
+                    )
                 finally:
                     conexion.close()
 
@@ -496,7 +496,9 @@ def open_main_menu_user():
                     conexion.row_factory = sqlite3.Row
                     agendar_devolucion(conexion, id_usuario_demo)
                 except Exception as e:
-                    console.print(f"Ha ocurrido el error: {e}", style=error_style)
+                    console.print(
+                        f"Ha ocurrido el error: {e}", style=error_style
+                    )
                 finally:
                     conexion.close()
 
@@ -511,7 +513,8 @@ def open_main_menu_user():
 
         except ValueError:
             console.print(
-                "Por favor, ingresa un número entero válido.", style=error_style
+                "Por favor, ingresa un número entero válido.",
+                style=error_style,
             )
         except KeyboardInterrupt:
             console.print(
