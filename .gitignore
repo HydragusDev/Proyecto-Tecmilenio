@@ -1,1 +1,7 @@
-venv/
+# Ignore Python compilation and cache folders
+__pycache__/
+*.pyc
+
+# Ignore your virtual environment sandbox if you use one
+.venv/
+env/
