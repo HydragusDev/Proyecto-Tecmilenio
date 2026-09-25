@@ -8,16 +8,20 @@ from tkinter import messagebox
 
 def validar_aceptacion():
     if aceptar_var.get() == 1:
-        messagebox.showinfo("Gracias por aceptar las reglas.")
+        messagebox.showinfo("Mensaje", "Gracias por aceptar")
+
+        root.destroy()
+
     else:
         messagebox.showwarning(
-            "Atención", "Debes aceptar las reglas para continuar"
+            "Atención",
+            "Debes aceptar los términos y condiciones para continuar.",
         )
 
 
 root = tk.Tk()
 root.title("Términos y Condiciones")
-root.geometry("800x450")
+root.geometry("750x450")
 
 label_titulo = tk.Label(
     root, text="Términos y Condiciones", font=("Arial", 14, "bold")
@@ -30,6 +34,7 @@ label_empleado = tk.Label(
     font=("Arial", 12, "bold"),
 )
 label_empleado.pack(pady=5)
+
 label_textoemp = tk.Label(
     root,
     text="1. EL empleado debe iniciar sesion con un usuario validos para acceder al sistema."
@@ -41,5 +46,25 @@ label_textoemp = tk.Label(
     "\n7. El empleado no puede registrar informacion incompleta de un libro.",
     font=("Arial", 12),
 )
+
 label_textoemp.pack(pady=5)
+
+aceptar_var = tk.IntVar()
+
+checkbox = tk.Checkbutton(
+    root,
+    text="Acepto los términos y condiciones",
+    variable=aceptar_var,
+    font=("Arial", 12),
+)
+checkbox.pack(pady=15)
+
+boton_aceptar = tk.Button(
+    root,
+    text="Continuar",
+    font=("Arial", 11, "bold"),
+    command=validar_aceptacion,
+)
+boton_aceptar.pack(pady=5)
+
 root.mainloop()

@@ -104,6 +104,9 @@ def main_menu() -> str:
 
 
 
+    input_menu = int(
+        input("""Choose an Option. 1- Employee Menu.  2- User menu. > """)
+    )
 
 # Main
 def main() -> None:
