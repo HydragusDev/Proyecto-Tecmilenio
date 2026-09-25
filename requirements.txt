@@ -1,0 +1,5 @@
+argon2==0.1.10
+email_validator==2.3.0
+pwinput==1.0.3
+pyfiglet==1.0.4
+rich==15.0.0
