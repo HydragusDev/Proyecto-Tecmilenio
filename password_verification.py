@@ -49,9 +49,10 @@ def verify_login_main_loop() -> dict | None:
                 )
                 continue
 
+            # FIX: Changed user_temp.get() to user_temp[] for sqlite3.Row compatibility
             if (
                 user_temp is None
-                or user_temp.get("username") != input_username
+                or user_temp["username"] != input_username
             ):
                 attempts += 1
                 console.print(

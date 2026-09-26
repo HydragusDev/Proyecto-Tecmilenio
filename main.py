@@ -85,8 +85,7 @@ def main_menu() -> str:
         )  # Takes login function from password_verification
 
         if user is not None:
-            # Depending on the role, shows employee or user options
-            if user["role"] == "empleado":
+            if user["role"] == "employee_role":
                 open_main_menu_employee()
             else:
                 open_main_menu_user()
