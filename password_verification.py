@@ -23,20 +23,24 @@ def verify_login_main_loop() -> dict | None:
             console.print(
                 "=== SISTEMA DE INICIO DE SESIÓN ===", style="bold blue"
             )
-            input_mail = Prompt.ask("Correo electrónico").strip().lower()
-
-            if not input_mail:
-                console.print(
-                    "El correo no puede estar vacío.", style=error_style
-                )
-                continue
-
-            input_username = Prompt.ask("Nombre de usuario").strip()
+            
+            #Ask for username
+            input_username = Prompt.ask("Nombre de usuario >").strip()
 
             if not input_username:
                 console.print(
                     "El nombre de usuario no puede estar vacío.",
                     style=error_style,
+                )
+                continue
+
+
+            #Akk for mail
+            input_mail = Prompt.ask("Correo electrónico").strip().lower()
+            
+            if not input_mail:
+                console.print(
+                    "El correo no puede estar vacío.", style=error_style
                 )
                 continue
 

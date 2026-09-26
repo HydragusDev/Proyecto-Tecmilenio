@@ -10,16 +10,21 @@ import sys
 import threading
 import time
 
+#Rich system
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.prompt import Prompt
+#Console object for rich system.
 
+
+#Database and menu functions
 import database as db
 from menu_employee import open_main_menu_employee
 from menu_user import open_main_menu_user
 from password_registration import register_user
 from password_verification import verify_login_main_loop
+
 
 console = Console()
 
@@ -123,14 +128,15 @@ def main() -> None:
             # otherwise
             # Closes program on choice within menu
             if option == "3":
-                print("Exiting Program")
+                print("Cerrando el programa...")
                 break
-
-            # Breaks countdown manually.
+            
+            #Cancels timer if still on by here
             if inactivity_timer is not None:
                 inactivity_timer.cancel()
                 inactivity_timer = None
 
+        #Keyboard interrupt system exit.
         except (KeyboardInterrupt, SystemExit):
             if inactivity_timer is not None:
                 inactivity_timer.cancel()

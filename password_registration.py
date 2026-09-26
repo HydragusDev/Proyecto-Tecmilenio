@@ -76,11 +76,11 @@ def register_user() -> None:
         hashed_password = hash_password(password_bytes)
         break
 
-    role = Prompt.ask("Role >", choices=["usuario", "empleado"])
+    role = Prompt.ask("Rol >", choices=["usuario", "empleado"])
     role_map = {"usuario": "user_role", "empleado": "employee_role"}
     role = role_map[role]
 
-    # 3. Guardado en la base de datos dentro de un bloque try...except
+    # Saved in the database within a try except block
     try:
         db.user(username, mail, hashed_password, role)
         console.print(

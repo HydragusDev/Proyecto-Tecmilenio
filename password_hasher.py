@@ -1,7 +1,7 @@
 # Uses argon2 password hasher to SECURELY store and verify passwords.
 # creates an object PasswordHasher object (ph) with methods ph.hash and ph.verify both for hashing and salting a new password as well as for verifying a hash.
 
-
+#Imports
 import gc
 
 from argon2 import PasswordHasher, Type
@@ -15,15 +15,13 @@ _ph = PasswordHasher(
     type=Type.ID,
 )
 
-
-# Takes in the password converted to bytes and returns a unique, randomly salted hash.
+# Takes in the password converted to bytes and returns a unique, randomly salted hash as a string.
 def hash_password(password_bytes: bytes) -> str:
     try:
         return _ph.hash(password_bytes)
     finally:
         del password_bytes
         gc.collect()
-
 
 # Takes in the inputed password and checks it against the stored_hash to see if they coincide and user is verified.
 def verify_password(stored_hash: str, password_input_bytes: bytes) -> bool:
@@ -38,5 +36,6 @@ def verify_password(stored_hash: str, password_input_bytes: bytes) -> bool:
         del password_input_bytes
         gc.collect()
 
+        
 
-# Object Oriented programming my beloved
+# Object Oriented programming my beloved.
