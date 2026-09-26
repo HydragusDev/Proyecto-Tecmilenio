@@ -10,21 +10,19 @@ import sys
 import threading
 import time
 
-#Rich system
+# Rich system
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.prompt import Prompt
-#Console object for rich system.
 
-
-#Database and menu functions
+# Console object for rich system.
+# Database and menu functions
 import database as db
 from menu_employee import open_main_menu_employee
 from menu_user import open_main_menu_user
 from password_registration import register_user
 from password_verification import verify_login_main_loop
-
 
 console = Console()
 
@@ -91,9 +89,9 @@ def main_menu() -> str:
 
         if user is not None:
             if user["role"] == "employee_role":
-                open_main_menu_employee()
+                open_main_menu_employee(user)
             else:
-                open_main_menu_user()
+                open_main_menu_user(user)
 
     # Option 2: Registering
     elif option == "2":
@@ -130,13 +128,13 @@ def main() -> None:
             if option == "3":
                 print("Cerrando el programa...")
                 break
-            
-            #Cancels timer if still on by here
+
+            # Cancels timer if still on by here
             if inactivity_timer is not None:
                 inactivity_timer.cancel()
                 inactivity_timer = None
 
-        #Keyboard interrupt system exit.
+        # Keyboard interrupt system exit.
         except (KeyboardInterrupt, SystemExit):
             if inactivity_timer is not None:
                 inactivity_timer.cancel()

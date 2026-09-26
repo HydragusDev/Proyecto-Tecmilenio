@@ -23,8 +23,8 @@ def verify_login_main_loop() -> dict | None:
             console.print(
                 "=== SISTEMA DE INICIO DE SESIÓN ===", style="bold blue"
             )
-            
-            #Ask for username
+
+            # Ask for username
             input_username = Prompt.ask("Nombre de usuario >").strip()
 
             if not input_username:
@@ -34,10 +34,9 @@ def verify_login_main_loop() -> dict | None:
                 )
                 continue
 
-
-            #Akk for mail
+            # Akk for mail
             input_mail = Prompt.ask("Correo electrónico").strip().lower()
-            
+
             if not input_mail:
                 console.print(
                     "El correo no puede estar vacío.", style=error_style
@@ -54,10 +53,7 @@ def verify_login_main_loop() -> dict | None:
                 continue
 
             # FIX: Changed user_temp.get() to user_temp[] for sqlite3.Row compatibility
-            if (
-                user_temp is None
-                or user_temp["username"] != input_username
-            ):
+            if user_temp is None or user_temp["username"] != input_username:
                 attempts += 1
                 console.print(
                     f"Acceso denegado: Datos inválidos. Le quedan {3 - attempts} intentos.",
