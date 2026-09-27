@@ -72,3 +72,7 @@ def mostrar_reglas_usuario() -> bool:
 
     root.mainloop()
     return acepto_terminos
+
+
+if __name__ == "__main__":
+    mostrar_reglas_usuario()
