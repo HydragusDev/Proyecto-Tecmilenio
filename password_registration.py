@@ -5,6 +5,8 @@ from rich.prompt import Prompt
 from rich.style import Style
 
 import database as db
+import rules_employe
+import rules_user
 from password_hasher import hash_password
 
 console = Console()
@@ -78,11 +80,28 @@ def register_user() -> None:
 
     role = Prompt.ask("Rol >", choices=["usuario", "empleado"])
     role_map = {"usuario": "user_role", "empleado": "employee_role"}
-    role = role_map[role]
+    role_db = role_map[role]
+
+    # Mostrar la ventana de reglas según el rol
+    terminos_aceptados = False
+    if role_db == "user_role":
+        console.print("Mostrando términos y condiciones para Usuario...")
+        terminos_aceptados = rules_user.mostrar_reglas_usuario()
+    elif role_db == "employee_role":
+        console.print("Mostrando términos y condiciones para Empleado...")
+        terminos_aceptados = rules_employe.mostrar_reglas_empleado()
+
+    if not terminos_aceptados:
+        console.print(
+            "Registro cancelado. Debes aceptar los términos y condiciones.",
+            style=error_style,
+        )
+        return
 
     # Saved in the database within a try except block
     try:
-        db.user(username, mail, hashed_password, role)
+        # Se pasa accepted_terms=1 porque el usuario aceptó las reglas
+        db.user(username, mail, hashed_password, role_db, accepted_terms=1)
         console.print(
             f"Cuenta creada correctamente para {username}.", style=check_style
         )

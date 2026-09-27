@@ -75,17 +75,18 @@ def user(
     username: str,
     mail: str,
     hashed_password: str,
-    role: str,  # <-- CAMBIADO AQUÍ
+    role: str,
+    accepted_terms: int = 1,
 ) -> None:
     """Inserta un nuevo usuario en la base de datos."""
     conexion = conectar()
     try:
         conexion.execute(
             """
-            INSERT INTO users (username, mail, hashed_password, role, accepted_terms) -- <-- CAMBIADO AQUÍ
-            VALUES (?, ?, ?, ?, 1)
+            INSERT INTO users (username, mail, hashed_password, role, accepted_terms)
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (username, mail, hashed_password, role),
+            (username, mail, hashed_password, role, accepted_terms),
         )
         conexion.commit()
     finally:
