@@ -238,6 +238,11 @@ def insertar_libro(conexion):
             if titulo_input.lower() in ("0", "volver", "cancelar", "salir"):
                 console.print("Regresando al menú principal...")
                 return
+            if not titulo_input:
+                console.print(
+                    "El título no puede estar vacío.", style=error_style
+                )
+                continue
             # .title() pone en mayúscula la primera letra de cada palabra.
             titulo_nuevo = titulo_input.title()
 
@@ -251,6 +256,11 @@ def insertar_libro(conexion):
                     "Operación cancelada. Regresando al menú principal..."
                 )
                 return
+            if not autor_input:
+                console.print(
+                    "El autor no puede estar vacío.", style=error_style
+                )
+                continue
             autor_nuevo = autor_input.title()
 
             # * 3. Solicitamos la cantidad de ejemplares físicos disponibles.
@@ -258,6 +268,12 @@ def insertar_libro(conexion):
                 ejemplares_nuevo = int(
                     input("Ingresa los ejemplares que tenemos en existencia: ")
                 )
+                if ejemplares_nuevo < 0:
+                    console.print(
+                        "Los ejemplares no pueden ser negativos.",
+                        style=error_style,
+                    )
+                    continue
             except ValueError:
                 # ! Validamos que el empleado ingrese un número entero real.
                 console.print(
@@ -1002,6 +1018,12 @@ def edicion_libros(conexion, campo, fila, id_modificar):
                 campo_editado = int(
                     input(f"Ingresa el nuevo número de {campo}: ")
                 )
+                if campo_editado < 0:
+                    console.print(
+                        "El número de ejemplares no puede ser negativo.",
+                        style=error_style,
+                    )
+                    return False
             except ValueError:
                 # ! Ejemplares debe ser estrictamente un número entero.
                 console.print(
@@ -1018,6 +1040,12 @@ def edicion_libros(conexion, campo, fila, id_modificar):
             campo_editado = (
                 input(f"Ingresa el nuevo {campo}: ").strip().title()
             )
+            if not campo_editado:
+                console.print(
+                    "El valor editado no puede estar vacío.",
+                    style=error_style,
+                )
+                return False
             console.print(f"El nuevo {campo} del libro será: {campo_editado}")
 
         # * Solicitamos confirmación explícita antes de hacer el UPDATE.
@@ -1046,12 +1074,13 @@ def edicion_libros(conexion, campo, fila, id_modificar):
                 console.print(
                     "Libro editado correctamente.", style=check_style
                 )
-                console.print("Sus datos ahora son:")
-                console.print(f"Título: {fila_actualizada['titulo']}")
-                console.print(f"Autor: {fila_actualizada['autor']}")
-                console.print(
-                    f"Número de Ejemplares: {fila_actualizada['ejemplares']}"
-                )
+                if fila_actualizada:
+                    console.print("Sus datos ahora son:")
+                    console.print(f"Título: {fila_actualizada['titulo']}")
+                    console.print(f"Autor: {fila_actualizada['autor']}")
+                    console.print(
+                        f"Número de Ejemplares: {fila_actualizada['ejemplares']}"
+                    )
                 return True
             elif confirmar in ("no", "n", "cancelar", "volver"):
                 console.print("Edición cancelada.")

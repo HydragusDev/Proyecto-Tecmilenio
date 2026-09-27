@@ -61,10 +61,10 @@ def verify_login_main_loop() -> dict | None:
                 )
                 if attempts >= 3:
                     console.print(
-                        "Demasiados intentos fallidos. Saliendo del sistema...",
+                        "Demasiados intentos fallidos. Volviendo al menú principal...",
                         style=error_style,
                     )
-                    sys.exit(1)
+                    return None
                 continue
 
             password_input_bytes = pwinput.pwinput(
@@ -93,14 +93,14 @@ def verify_login_main_loop() -> dict | None:
 
             if attempts >= 3:
                 console.print(
-                    "Demasiados intentos fallidos. Saliendo del sistema...",
+                    "Demasiados intentos fallidos. Volviendo al menú principal...",
                     style=error_style,
                 )
-                sys.exit(1)
+                return None
 
         except KeyboardInterrupt:
             console.print("\nInicio de sesión cancelado.", style=error_style)
-            sys.exit(0)
+            return None
 
         finally:
             if "password_input_bytes" in locals():

@@ -16,97 +16,109 @@ check_style = Style(color="green", blink=True)
 
 
 def register_user() -> None:
-    while True:
-        username = Prompt.ask("Nombre de usuario").strip()
-        if not username:
-            console.print(
-                "El nombre de usuario no puede estar vacio.", style=error_style
-            )
-            continue
-        break
-
-    while True:
-        mail = Prompt.ask("Correo electronico").strip().lower()
-
-        if not mail:
-            console.print("El correo no puede estar vacio.", style=error_style)
-            continue
-
-        # 1. Validar sintaxis del correo electrónico
-        try:
-            email_info = validate_email(mail, check_deliverability=False)
-            mail = email_info.normalized
-        except EmailNotValidError as e:
-            console.print(
-                f"Formato de correo inválido: {e}", style=error_style
-            )
-            continue
-
-        # 2. Verificar existencia en la base de datos
-        try:
-            if db.verify_mail(mail):
+    try:
+        while True:
+            username = Prompt.ask("Nombre de usuario").strip()
+            if not username:
                 console.print(
-                    "Ya existe una cuenta con ese correo.",
+                    "El nombre de usuario no puede estar vacio.",
                     style=error_style,
                 )
                 continue
+            break
+
+        while True:
+            mail = Prompt.ask("Correo electronico").strip().lower()
+
+            if not mail:
+                console.print(
+                    "El correo no puede estar vacio.", style=error_style
+                )
+                continue
+
+            # 1. Validar sintaxis del correo electrónico
+            try:
+                email_info = validate_email(mail, check_deliverability=False)
+                mail = email_info.normalized
+            except EmailNotValidError as e:
+                console.print(
+                    f"Formato de correo inválido: {e}", style=error_style
+                )
+                continue
+
+            # 2. Verificar existencia en la base de datos
+            try:
+                if db.verify_mail(mail):
+                    console.print(
+                        "Ya existe una cuenta con ese correo.",
+                        style=error_style,
+                    )
+                    continue
+            except Exception as e:
+                console.print(
+                    f"Error al verificar el correo: {e}", style=error_style
+                )
+                continue
+
+            break
+
+        while True:
+            input_password = pwinput.pwinput("Contraseña > ", mask="*")
+            input_confirmation = pwinput.pwinput(
+                "Confirma tu contraseña > ", mask="*"
+            )
+
+            if not input_password:
+                console.print(
+                    "La contraseña no puede estar vacia.", style=error_style
+                )
+                continue
+
+            if input_password != input_confirmation:
+                console.print(
+                    "Las contraseñas no coinciden.", style=error_style
+                )
+                continue
+
+            password_bytes = input_password.encode("utf-8")
+            hashed_password = hash_password(password_bytes)
+            break
+
+        role = Prompt.ask("Rol >", choices=["usuario", "empleado"])
+        role_map = {"usuario": "user_role", "empleado": "employee_role"}
+        role_db = role_map[role]
+
+        # Mostrar la ventana de reglas según el rol
+        terminos_aceptados = False
+        if role_db == "user_role":
+            console.print("Mostrando términos y condiciones para Usuario...")
+            terminos_aceptados = rules_user.mostrar_reglas_usuario()
+        elif role_db == "employee_role":
+            console.print("Mostrando términos y condiciones para Empleado...")
+            terminos_aceptados = rules_employe.mostrar_reglas_empleado()
+
+        if not terminos_aceptados:
+            console.print(
+                "Registro cancelado. Debes aceptar los términos y condiciones.",
+                style=error_style,
+            )
+            return
+
+        # Saved in the database within a try except block
+        try:
+            # Se pasa accepted_terms=1 porque el usuario aceptó las reglas
+            db.user(username, mail, hashed_password, role_db, accepted_terms=1)
+            console.print(
+                f"Cuenta creada correctamente para {username}.",
+                style=check_style,
+            )
         except Exception as e:
             console.print(
-                f"Error al verificar el correo: {e}", style=error_style
+                f"Error al registrar el usuario en la base de datos: {e}",
+                style=error_style,
             )
-            continue
-
-        break
-
-    while True:
-        input_password = pwinput.pwinput("Contraseña > ", mask="*")
-        input_confirmation = pwinput.pwinput(
-            "Confirma tu contraseña > ", mask="*"
-        )
-
-        if not input_password:
-            console.print(
-                "La contraseña no puede estar vacia.", style=error_style
-            )
-            continue
-
-        if input_password != input_confirmation:
-            console.print("Las contraseñas no coinciden.", style=error_style)
-            continue
-
-        password_bytes = input_password.encode("utf-8")
-        hashed_password = hash_password(password_bytes)
-        break
-
-    role = Prompt.ask("Rol >", choices=["usuario", "empleado"])
-    role_map = {"usuario": "user_role", "empleado": "employee_role"}
-    role_db = role_map[role]
-
-    # Mostrar la ventana de reglas según el rol
-    terminos_aceptados = False
-    if role_db == "user_role":
-        console.print("Mostrando términos y condiciones para Usuario...")
-        terminos_aceptados = rules_user.mostrar_reglas_usuario()
-    elif role_db == "employee_role":
-        console.print("Mostrando términos y condiciones para Empleado...")
-        terminos_aceptados = rules_employe.mostrar_reglas_empleado()
-
-    if not terminos_aceptados:
+    except KeyboardInterrupt:
         console.print(
-            "Registro cancelado. Debes aceptar los términos y condiciones.",
-            style=error_style,
+            "\nRegistro cancelado por el usuario.", style=error_style
         )
         return
-
-    # Saved in the database within a try except block
-    try:
-        # Se pasa accepted_terms=1 porque el usuario aceptó las reglas
-        db.user(username, mail, hashed_password, role_db, accepted_terms=1)
-        console.print(
-            f"Cuenta creada correctamente para {username}.", style=check_style
-        )
-    except Exception as e:
-        console.print(
-            f"Error al registrar el usuario en la base de datos: {e}",
-            style=error_style,
-        )
