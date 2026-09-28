@@ -5,38 +5,61 @@ Archivo encargado de la conexión con 'bitacora.db' y la creación de tablas
 donde se guarda la información del usuario además del inventario.
 """
 
+import os
 import sqlite3
 from pathlib import Path
 
-RUTA_BD = Path(__file__).parent / "bitacora.db"
 
+#Initializes db path
+APPDATA_DIR = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
+DB_DIR = APPDATA_DIR / "Proyecto-Tecmilenio"
+RUTA_BD = DB_DIR / "bitacora.db"
+
+
+
+#Db route function
+def initialize_bd_route() -> None:
+    """Checks if datababase is present in appdata and if not, creates it."""
+    DB_DIR.mkdir(parents=True, exist_ok=True)
+
+    if not RUTA_BD.exists():
+        sqlite3.connect(RUTA_BD).close()
+
+
+#Runs the function
+initialize_bd_route()
+
+
+#Initializes database info on first run.
 DATABASE_BLUEPRINT = """
 CREATE TABLE IF NOT EXISTS "libros" (
-    "id"          INTEGER PRIMARY KEY AUTOINCREMENT,
-    "titulo"      TEXT NOT NULL,
-    "autor"       TEXT NOT NULL,
-    "ejemplares"  INTEGER NOT NULL
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "titulo" TEXT NOT NULL,
+    "autor" TEXT NOT NULL,
+    "ejemplares" INTEGER NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "users" (
-    "id"                    INTEGER PRIMARY KEY AUTOINCREMENT,
-    "username"              TEXT NOT NULL,
-    "mail"                  TEXT NOT NULL UNIQUE,
-    "hashed_password"       BLOB NOT NULL, -- <-- CAMBIADO AQUÍ
-    "role"                  TEXT NOT NULL CHECK("role" IN ('user_role', 'employee_role')),
-    "accepted_terms"        INTEGER NOT NULL DEFAULT 0,
-    "registered_date"       TEXT NOT NULL DEFAULT (datetime('now'))
+    "id" INTEGER,
+    "username" TEXT NOT NULL,
+    "mail" TEXT NOT NULL UNIQUE,
+    "hashed_password" TEXT NOT NULL,
+    "role" TEXT NOT NULL CHECK("role" IN ('user_role', 'employee_role')),
+    "accepted_terms" INTEGER NOT NULL DEFAULT 0,
+    "registered_date" TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY("id" AUTOINCREMENT)
 );
 
 CREATE TABLE IF NOT EXISTS "prestamos" (
-    "id"                 INTEGER PRIMARY KEY AUTOINCREMENT,
-    "id_libro"           INTEGER NOT NULL,
-    "id_usuario"         INTEGER NOT NULL,
-    "estado"             TEXT NOT NULL DEFAULT 'pendiente' CHECK("estado" IN ('pendiente', 'autorizado', 'rechazado', 'devuelto')),
-    "fecha_solicitud"    TEXT NOT NULL DEFAULT (datetime('now')),
+    "id" INTEGER,
+    "id_libro" INTEGER NOT NULL,
+    "id_usuario" INTEGER NOT NULL,
+    "estado" TEXT NOT NULL DEFAULT 'pendiente' CHECK("estado" IN ('pendiente', 'autorizado', 'rechazado', 'devuelto')),
+    "fecha_solicitud" TEXT NOT NULL DEFAULT (datetime('now')),
     "fecha_autorizacion" TEXT,
-    "fecha_devolucion"   TEXT,
-    "motivo_rechazo"     TEXT, 
+    "fecha_devolucion" TEXT,
+    "motivo_rechazo" TEXT,
+    PRIMARY KEY("id" AUTOINCREMENT),
     FOREIGN KEY("id_libro") REFERENCES "libros"("id"),
     FOREIGN KEY("id_usuario") REFERENCES "users"("id")
 );
@@ -44,6 +67,7 @@ CREATE TABLE IF NOT EXISTS "prestamos" (
 
 
 def conectar() -> sqlite3.Connection:
+    initialize_bd_route()
     conexion = sqlite3.connect(RUTA_BD)
     conexion.execute("PRAGMA foreign_keys = ON;")
     return conexion
