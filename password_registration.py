@@ -18,6 +18,7 @@ check_style = Style(color="green", blink=True)
 def register_user() -> None:
     try:
         while True:
+            #Asks for user
             username = Prompt.ask("Nombre de usuario").strip()
             if not username:
                 console.print(
@@ -26,7 +27,7 @@ def register_user() -> None:
                 )
                 continue
             break
-
+        #Asks for email
         while True:
             mail = Prompt.ask("Correo electronico").strip().lower()
 
@@ -36,17 +37,18 @@ def register_user() -> None:
                 )
                 continue
 
-            # 1. Validar sintaxis del correo electrónico
+            #Validates syntax of email
             try:
                 email_info = validate_email(mail, check_deliverability=False)
                 mail = email_info.normalized
+            #Error handling
             except EmailNotValidError as e:
                 console.print(
                     f"Formato de correo inválido: {e}", style=error_style
                 )
                 continue
 
-            # 2. Verificar existencia en la base de datos
+            #Verifies existence in the database
             try:
                 if db.verify_mail(mail):
                     console.print(
@@ -61,7 +63,7 @@ def register_user() -> None:
                 continue
 
             break
-
+        #Password input
         while True:
             input_password = pwinput.pwinput("Contraseña > ", mask="*")
             input_confirmation = pwinput.pwinput(
@@ -83,12 +85,12 @@ def register_user() -> None:
             password_bytes = input_password.encode("utf-8")
             hashed_password = hash_password(password_bytes)
             break
-
+        #Role input
         role = Prompt.ask("Rol >", choices=["usuario", "empleado"])
         role_map = {"usuario": "user_role", "empleado": "employee_role"}
         role_db = role_map[role]
 
-        # Mostrar la ventana de reglas según el rol
+       #Shows rules depending on role
         terminos_aceptados = False
         if role_db == "user_role":
             console.print("Mostrando términos y condiciones para Usuario...")

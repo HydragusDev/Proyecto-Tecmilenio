@@ -36,6 +36,8 @@ To reset the program data, delete this folder. The application will recreate it 
 
 The application was bundled into a standalone Windows executable using PyInstaller with the following command:
 
+
+
 pyinstaller --onefile --console --collect-all pyfiglet main.py
 
 This is necessary because `pyfiglet` loads its font files at runtime, and those files must be included when packaging the application into a single `.exe` file. Without this option, the ASCII art may not render correctly in the compiled executable.

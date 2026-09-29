@@ -2,6 +2,6 @@
 __pycache__/
 *.pyc
 
-# Ignore your virtual environment sandbox if you use one
+# Ignore virtual environment
 .venv/
 env/

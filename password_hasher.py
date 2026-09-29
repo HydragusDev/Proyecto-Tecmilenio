@@ -1,5 +1,5 @@
 # Uses argon2 password hasher to SECURELY store and verify passwords.
-# creates an object PasswordHasher object (ph) with methods ph.hash and ph.verify both for hashing and salting a new password as well as for verifying a hash.
+# creates an object PasswordHasher object (ph) with methods _ph.hash and _ph.verify both for hashing and salting a new password as well as for verifying a hash.
 
 #Imports
 import gc
@@ -8,6 +8,7 @@ from argon2 import PasswordHasher, Type
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
 
 # Configures the hasher
+#(Internal use only) hash_password and verify_password are wrapped functions
 _ph = PasswordHasher(
     memory_cost=19456,
     time_cost=2,
